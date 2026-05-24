@@ -1,0 +1,29 @@
+# Environment & secrets
+.env
+
+# Composer dependencies
+vendor/
+
+# Uploaded files (jangan push gambar user)
+assets/images/products/*.jpeg
+assets/images/products/*.jpg
+assets/images/products/*.png
+assets/images/products/*.gif
+assets/images/reviews/*.png
+assets/images/reviews/*.jpg
+assets/images/reviews/*.jpeg
+!assets/images/reviews/.gitkeep
+
+# Kiro IDE
+.kiro/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp/debug files
+*.log
+test_*.php
+check_*.php
+fix_*.php
+gen_*.php

@@ -1,0 +1,19 @@
+# D'Florist .htaccess Configuration
+
+# Enable Rewrite Engine
+RewriteEngine On
+RewriteBase /
+
+# Prevent directory listing
+Options -Indexes
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# PHP settings (jika diizinkan oleh server)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
