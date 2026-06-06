@@ -114,18 +114,44 @@ $cartItems = $_SESSION['cart'] ?? [];
 if (!empty($cartItems)) {
     $productIds = array_keys($cartItems);
     $placeholders = str_repeat('?,', count($productIds) - 1) . '?';
-    $stmt = $pdo->prepare("SELECT id, stock FROM products WHERE id IN ($placeholders)");
+    $stmt = $pdo->prepare("SELECT id, name, price, promo_price, is_promo, stock, image FROM products WHERE id IN ($placeholders)");
     $stmt->execute($productIds);
-    $stockData = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-    
+    $productsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Reindex by id
+    $productsById = [];
+    foreach ($productsData as $p) {
+        $productsById[$p['id']] = $p;
+    }
+
     foreach ($cartItems as $id => $item) {
-        if (isset($stockData[$id])) {
-            $_SESSION['cart'][$id]['stock'] = $stockData[$id];
-            // Adjust quantity if it exceeds current stock
-            if ($item['quantity'] > $stockData[$id]) {
-                $_SESSION['cart'][$id]['quantity'] = $stockData[$id];
-            }
+        if (!isset($productsById[$id])) continue;
+        $p = $productsById[$id];
+
+        // Selalu update stok terbaru
+        $_SESSION['cart'][$id]['stock'] = (int)$p['stock'];
+
+        // Sesuaikan quantity jika melebihi stok
+        if ($item['quantity'] > (int)$p['stock']) {
+            $_SESSION['cart'][$id]['quantity'] = (int)$p['stock'];
         }
+
+        // Lengkapi field yang mungkin kosong (cart guest / format lama)
+        if (empty($_SESSION['cart'][$id]['product_name'])) {
+            $_SESSION['cart'][$id]['product_name'] = $p['name'];
+        }
+        if (!isset($_SESSION['cart'][$id]['image'])) {
+            $_SESSION['cart'][$id]['image'] = $p['image'];
+        }
+        if (!isset($_SESSION['cart'][$id]['is_promo'])) {
+            $_SESSION['cart'][$id]['is_promo'] = $p['is_promo'];
+        }
+        if (!isset($_SESSION['cart'][$id]['original_price'])) {
+            $_SESSION['cart'][$id]['original_price'] = (float)$p['price'];
+        }
+        // Perbarui harga dengan harga terkini dari DB
+        $currentPrice = ($p['is_promo'] && $p['promo_price'] > 0) ? (float)$p['promo_price'] : (float)$p['price'];
+        $_SESSION['cart'][$id]['price'] = $currentPrice;
     }
     $cartItems = $_SESSION['cart'];
 }

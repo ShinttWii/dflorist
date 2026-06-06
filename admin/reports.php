@@ -26,7 +26,7 @@ if ($reportType === 'daily') {
 $stmt = $pdo->prepare("SELECT COUNT(*) AS total_orders, SUM(CASE WHEN order_status='selesai' THEN 1 ELSE 0 END) AS selesai, SUM(CASE WHEN order_status='dibatalkan' THEN 1 ELSE 0 END) AS dibatalkan, SUM(CASE WHEN order_status NOT IN ('dibatalkan') THEN subtotal ELSE 0 END) AS pendapatan FROM orders WHERE DATE(created_at) BETWEEN ? AND ?");
 $stmt->execute([$startDate, $endDate]); $summary = $stmt->fetch();
 
-$stmtTop = $pdo->prepare("SELECT p.name, SUM(oi.quantity) AS qty, SUM(oi.subtotal) AS rev FROM order_items oi JOIN products p ON oi.product_id=p.id JOIN orders o ON oi.order_id=o.id WHERE o.order_status NOT IN ('dibatalkan') AND DATE(o.created_at) BETWEEN ? AND ? GROUP BY p.id ORDER BY rev DESC LIMIT 5");
+$stmtTop = $pdo->prepare("SELECT p.name, SUM(oi.quantity) AS qty, SUM(oi.subtotal) AS rev FROM order_items oi JOIN products p ON oi.product_id=p.id JOIN orders o ON oi.order_id=o.id WHERE o.order_status NOT IN ('dibatalkan') AND DATE(o.created_at) BETWEEN ? AND ? GROUP BY p.id ORDER BY qty DESC LIMIT 5");
 $stmtTop->execute([$startDate, $endDate]); $topProducts = $stmtTop->fetchAll();
 
 $products = $pdo->query("SELECT id, name FROM products ORDER BY name")->fetchAll();

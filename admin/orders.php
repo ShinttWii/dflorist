@@ -133,7 +133,6 @@ $orders = $stmt->fetchAll();
                                     <option value="diproses" <?php echo $statusFilter === 'diproses' ? 'selected' : ''; ?>>Diproses</option>
                                     <option value="dikirim" <?php echo $statusFilter === 'dikirim' ? 'selected' : ''; ?>>Dikirim</option>
                                     <option value="selesai" <?php echo $statusFilter === 'selesai' ? 'selected' : ''; ?>>Selesai</option>
-                                    <option value="dibatalkan" <?php echo $statusFilter === 'dibatalkan' ? 'selected' : ''; ?>>Dibatalkan</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -188,9 +187,14 @@ $orders = $stmt->fetchAll();
                                             </td>
                                             <td><?php echo formatRupiah($order['total']); ?></td>
                                             <td>
-                                                <span class="badge <?php echo $order['payment_status'] === 'paid' ? 'bg-success' : 'bg-warning'; ?>">
-                                                    <?php echo strtoupper($order['payment_method']); ?>
-                                                </span>
+                                                <?php
+                                                $pm = $order['payment_method'];
+                                                if ($pm === 'cod') {
+                                                    echo '<span class="badge bg-secondary">COD</span>';
+                                                } else {
+                                                    echo '<span class="badge" style="background:#FF69B4;">Bayar Online</span>';
+                                                }
+                                                ?>
                                             </td>
                                             <td>
                                                 <span class="status-badge status-<?php echo $order['order_status']; ?>">

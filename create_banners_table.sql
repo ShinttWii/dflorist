@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS banners (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(200),
+    link VARCHAR(255) DEFAULT '#',
+    image VARCHAR(255) NOT NULL,
+    sort_order INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

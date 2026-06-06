@@ -45,7 +45,7 @@ if (!$order) {
                             <div class="col-6">
                                 <p class="mb-2"><?php echo $order['order_number']; ?></p>
                                 <p class="mb-2"><?php echo formatRupiah($order['total']); ?></p>
-                                <p class="mb-2"><?php echo strtoupper($order['payment_method']); ?></p>
+                                <p class="mb-2"><?php echo formatPaymentMethod($order['payment_method']); ?></p>
                                 <p class="mb-2">
                                     <span class="status-badge status-<?php echo $order['order_status']; ?>">
                                         <?php echo ucwords(str_replace('_', ' ', $order['order_status'])); ?>
@@ -55,7 +55,15 @@ if (!$order) {
                         </div>
                     </div>
                     
-                    <?php if ($order['payment_method'] !== 'cod'): ?>
+                    <?php if ($order['payment_status'] === 'paid'): ?>
+                    <div class="alert alert-success mb-4">
+                        <i class="fas fa-check-circle"></i>
+                        Pembayaran berhasil! Pesanan Anda sedang diproses.
+                    </div>
+                    <a href="receipt.php?order=<?php echo $order['order_number']; ?>" class="btn btn-primary btn-lg mb-2">
+                        <i class="fas fa-receipt me-2"></i> Lihat E-Receipt
+                    </a>
+                    <?php elseif ($order['payment_method'] !== 'cod'): ?>
                     <div class="alert alert-warning mb-4">
                         <i class="fas fa-info-circle"></i> 
                         Silakan lakukan pembayaran untuk melanjutkan pesanan Anda

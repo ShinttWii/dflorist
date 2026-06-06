@@ -17,7 +17,28 @@ $totalCustomers = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'customer
 $totalProducts  = $pdo->query("SELECT COUNT(*) FROM products WHERE is_active = 1")->fetchColumn();
 $revenueMonth   = $pdo->query("SELECT COALESCE(SUM(subtotal),0) FROM orders WHERE order_status NOT IN ('dibatalkan') AND MONTH(created_at)=MONTH(NOW()) AND YEAR(created_at)=YEAR(NOW())")->fetchColumn();
 $pendingCancel  = $pdo->query("SELECT COUNT(*) FROM cancellation_requests WHERE status='pending'")->fetchColumn();
-$topProducts    = $pdo->query("SELECT p.name, SUM(oi.quantity) AS qty FROM order_items oi JOIN products p ON oi.product_id=p.id JOIN orders o ON oi.order_id=o.id WHERE o.order_status NOT IN ('dibatalkan') GROUP BY p.id ORDER BY qty DESC LIMIT 5")->fetchAll();
+
+// Filter periode untuk top produk
+$topPeriod  = $_GET['top_period'] ?? 'month';
+$topStart   = $_GET['top_start']  ?? date('Y-m-01');
+$topEnd     = $_GET['top_end']    ?? date('Y-m-d');
+
+if ($topPeriod === 'month') {
+    $topStart = date('Y-m-01');
+    $topEnd   = date('Y-m-d');
+} elseif ($topPeriod === 'year') {
+    $topStart = date('Y-01-01');
+    $topEnd   = date('Y-m-d');
+} elseif ($topPeriod === 'all') {
+    $topStart = '2025-01-01';
+    $topEnd   = date('Y-m-d');
+}
+// kalau 'custom', pakai topStart & topEnd dari GET
+
+$stmtTop = $pdo->prepare("SELECT p.name, SUM(oi.quantity) AS qty FROM order_items oi JOIN products p ON oi.product_id=p.id JOIN orders o ON oi.order_id=o.id WHERE o.order_status NOT IN ('dibatalkan') AND DATE(o.created_at) BETWEEN ? AND ? GROUP BY p.id ORDER BY qty DESC LIMIT 5");
+$stmtTop->execute([$topStart, $topEnd]);
+$topProducts    = $stmtTop->fetchAll();
+
 $recentOrders   = $pdo->query("SELECT o.*, u.name AS customer_name FROM orders o JOIN users u ON o.user_id=u.id ORDER BY o.created_at DESC LIMIT 8")->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -39,8 +60,8 @@ $recentOrders   = $pdo->query("SELECT o.*, u.name AS customer_name FROM orders o
 <?php include 'includes/sidebar.php'; ?>
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Dashboard</h4>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Dashboard</h1>
         <small class="text-muted"><?php echo date('d F Y'); ?></small>
     </div>
 
@@ -187,6 +208,19 @@ $recentOrders   = $pdo->query("SELECT o.*, u.name AS customer_name FROM orders o
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom">
                     <h6 class="mb-0 fw-bold"><i class="fas fa-trophy text-warning me-1"></i> Top Produk Terlaris</h6>
+                    <form method="GET" class="mt-2 d-flex gap-1 flex-wrap">
+                        <select name="top_period" class="form-select form-select-sm" style="min-width:130px;" onchange="this.form.submit()">
+                            <option value="month" <?php echo $topPeriod==='month'?'selected':''; ?>>Bulan Ini</option>
+                            <option value="year"  <?php echo $topPeriod==='year' ?'selected':''; ?>>Tahun Ini</option>
+                            <option value="all"   <?php echo $topPeriod==='all'  ?'selected':''; ?>>Semua Waktu</option>
+                            <option value="custom"<?php echo $topPeriod==='custom'?'selected':''; ?>>Custom</option>
+                        </select>
+                        <?php if ($topPeriod === 'custom'): ?>
+                        <input type="date" name="top_start" class="form-control form-control-sm" style="width:130px;" value="<?php echo $topStart; ?>">
+                        <input type="date" name="top_end"   class="form-control form-control-sm" style="width:130px;" value="<?php echo $topEnd; ?>">
+                        <button type="submit" class="btn btn-primary btn-sm">Tampilkan</button>
+                        <?php endif; ?>
+                    </form>
                 </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
@@ -203,6 +237,13 @@ $recentOrders   = $pdo->query("SELECT o.*, u.name AS customer_name FROM orders o
                         <li class="list-group-item text-muted text-center small py-4">Belum ada data</li>
                         <?php endif; ?>
                     </ul>
+                    <div class="px-3 py-2 border-top">
+                        <small class="text-muted">
+                            Periode: <?php echo date('d M Y', strtotime($topStart)); ?> &ndash; <?php echo date('d M Y', strtotime($topEnd)); ?>
+                            &nbsp;&middot;&nbsp;
+                            <a href="reports.php?type=product&start_date=<?php echo $topStart; ?>&end_date=<?php echo $topEnd; ?>" class="text-decoration-none" style="color:#FF69B4;">Lihat Laporan</a>
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>

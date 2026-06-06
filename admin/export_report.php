@@ -41,74 +41,53 @@ $periode  = date('d M Y', strtotime($startDate)) . ' - ' . date('d M Y', strtoti
 
 function rupiah($n) { return 'Rp ' . number_format($n ?? 0, 0, ',', '.'); }
 
-// ── EXCEL ─────────────────────────────────────────────────────────────────────
+// ── EXCEL (CSV format — kompatibel semua versi Excel) ─────────────────────────
 if ($format === 'excel') {
-    header('Content-Type: application/vnd.ms-excel');
-    header('Content-Disposition: attachment;filename="' . $filename . '.xls"');
+    header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+    header('Content-Disposition: attachment;filename="' . $filename . '.csv"');
     header('Cache-Control: max-age=0');
-    echo '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8">
-    <style>
-        body{font-family:Arial,sans-serif;font-size:11pt}
-        table{border-collapse:collapse;width:100%}
-        th,td{border:1px solid #999;padding:6px 10px}
-        th{background:#FFD6E8;font-weight:bold}
-        .r{text-align:right} .c{text-align:center}
-        .title{font-size:14pt;font-weight:bold} .sub{font-size:11pt}
-        .sum th{background:#f5f5f5}
-    </style></head><body>';
+    header('Pragma: public');
 
-    echo '<table style="border:none;margin-bottom:16px"><tr><td style="border:none">
-        <div class="title">D\'Florist</div>
-        <div class="sub">' . $reportTitle . '</div>
-        <div>Periode: ' . $periode . '</div>
-        <div>Dicetak: ' . date('d M Y H:i') . '</div>
-    </td></tr></table>';
+    // BOM untuk Excel agar baca UTF-8 dengan benar
+    echo "\xEF\xBB\xBF";
 
-    echo '<table class="sum" style="width:40%;margin-bottom:20px">
-        <tr><th>Total Pesanan</th><td>' . $summary['total_orders'] . '</td></tr>
-        <tr><th>Pesanan Selesai</th><td>' . $summary['selesai'] . '</td></tr>
-        <tr><th>Pesanan Dibatalkan</th><td>' . $summary['dibatalkan'] . '</td></tr>
-        <tr><th>Total Pendapatan</th><td>' . rupiah($summary['pendapatan']) . '</td></tr>
-    </table>';
+    $out = fopen('php://output', 'w');
 
-    echo '<table><thead><tr>';
+    // Header info
+    fputcsv($out, ["D'Florist - " . $reportTitle], ';');
+    fputcsv($out, ['Periode: ' . $periode], ';');
+    fputcsv($out, ['Dicetak: ' . date('d M Y H:i')], ';');
+    fputcsv($out, [], ';');
+
+    // Ringkasan
+    fputcsv($out, ['RINGKASAN'], ';');
+    fputcsv($out, ['Total Pesanan', $summary['total_orders']], ';');
+    fputcsv($out, ['Pesanan Selesai', $summary['selesai']], ';');
+    fputcsv($out, ['Pesanan Dibatalkan', $summary['dibatalkan']], ';');
+    fputcsv($out, ['Total Pendapatan', rupiah($summary['pendapatan'])], ';');
+    fputcsv($out, [], ';');
+
+    // Header tabel
     if ($reportType === 'daily') {
-        echo '<th>Tanggal</th><th class="c">Total Pesanan</th><th class="c">Selesai</th><th class="c">Dibatalkan</th><th class="r">Pendapatan</th>';
+        fputcsv($out, ['Tanggal', 'Total Pesanan', 'Selesai', 'Dibatalkan', 'Pendapatan'], ';');
     } elseif ($reportType === 'monthly') {
-        echo '<th>Bulan</th><th class="c">Total Pesanan</th><th class="c">Selesai</th><th class="c">Dibatalkan</th><th class="r">Pendapatan</th>';
+        fputcsv($out, ['Bulan', 'Total Pesanan', 'Selesai', 'Dibatalkan', 'Pendapatan'], ';');
     } else {
-        echo '<th>Produk</th><th>Kategori</th><th class="c">Qty Terjual</th><th class="c">Transaksi</th><th class="r">Pendapatan</th>';
+        fputcsv($out, ['Produk', 'Kategori', 'Qty Terjual', 'Transaksi', 'Pendapatan'], ';');
     }
-    echo '</tr></thead><tbody>';
 
-    if (empty($reportData)) {
-        echo '<tr><td colspan="5" class="c">Tidak ada data</td></tr>';
-    } else {
-        foreach ($reportData as $row) {
-            echo '<tr>';
-            if ($reportType === 'daily') {
-                echo '<td>' . date('d M Y', strtotime($row['date'])) . '</td>';
-                echo '<td class="c">' . $row['total_orders'] . '</td>';
-                echo '<td class="c">' . $row['selesai'] . '</td>';
-                echo '<td class="c">' . $row['dibatalkan'] . '</td>';
-                echo '<td class="r">' . rupiah($row['pendapatan']) . '</td>';
-            } elseif ($reportType === 'monthly') {
-                echo '<td>' . date('F Y', strtotime($row['month'] . '-01')) . '</td>';
-                echo '<td class="c">' . $row['total_orders'] . '</td>';
-                echo '<td class="c">' . $row['selesai'] . '</td>';
-                echo '<td class="c">' . $row['dibatalkan'] . '</td>';
-                echo '<td class="r">' . rupiah($row['pendapatan']) . '</td>';
-            } else {
-                echo '<td>' . htmlspecialchars($row['product_name']) . '</td>';
-                echo '<td>' . $row['category_name'] . '</td>';
-                echo '<td class="c">' . $row['total_qty'] . ' pcs</td>';
-                echo '<td class="c">' . $row['total_transaksi'] . '</td>';
-                echo '<td class="r">' . rupiah($row['pendapatan']) . '</td>';
-            }
-            echo '</tr>';
+    // Data
+    foreach ($reportData as $row) {
+        if ($reportType === 'daily') {
+            fputcsv($out, [date('d M Y', strtotime($row['date'])), $row['total_orders'], $row['selesai'], $row['dibatalkan'], rupiah($row['pendapatan'])], ';');
+        } elseif ($reportType === 'monthly') {
+            fputcsv($out, [date('F Y', strtotime($row['month'].'-01')), $row['total_orders'], $row['selesai'], $row['dibatalkan'], rupiah($row['pendapatan'])], ';');
+        } else {
+            fputcsv($out, [$row['product_name'], $row['category_name'], $row['total_qty'].' pcs', $row['total_transaksi'], rupiah($row['pendapatan'])], ';');
         }
     }
-    echo '</tbody></table></body></html>';
+
+    fclose($out);
 
 // ── PDF (print via browser) ───────────────────────────────────────────────────
 } elseif ($format === 'pdf') {

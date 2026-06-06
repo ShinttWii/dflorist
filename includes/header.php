@@ -1,6 +1,6 @@
 <?php
 ob_start(); // Start output buffering
-require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/functions.php';
 
 // Update customer activity timestamp if logged in
 if (isCustomerLoggedIn() && isset($_SESSION['customer_id'])) {
@@ -11,8 +11,13 @@ if (isCustomerLoggedIn() && isset($_SESSION['customer_id'])) {
 
         // Auto-cancel pesanan yang expired
         cancelExpiredOrders($pdo, $customerId);
+        
+        // Sinkronisasi data keranjang belanja (cart) dari database ke session
+        loadCartFromDb($pdo, $customerId);
+        
     } catch (Exception $e) {
         // Silent fail - don't break page if update fails
+        error_log("Header Error: " . $e->getMessage());
     }
 }
 ?><!DOCTYPE html>

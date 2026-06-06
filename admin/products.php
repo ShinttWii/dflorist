@@ -98,13 +98,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get products
-$stmt = $pdo->query("
-    SELECT p.*, c.name as category_name 
-    FROM products p 
-    JOIN categories c ON p.category_id = c.id 
-    ORDER BY p.created_at DESC
-");
+// Get products with search
+$search = trim($_GET['search'] ?? '');
+if ($search) {
+    $stmt = $pdo->prepare("SELECT p.*, c.name as category_name FROM products p JOIN categories c ON p.category_id = c.id WHERE p.name LIKE ? ORDER BY p.created_at DESC");
+    $stmt->execute(['%' . $search . '%']);
+} else {
+    $stmt = $pdo->query("SELECT p.*, c.name as category_name FROM products p JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC");
+}
 $products = $stmt->fetchAll();
 
 // Get categories
@@ -135,6 +136,23 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
                         <i class="fas fa-plus"></i> Tambah Produk
                     </button>
                 </div>
+
+                <!-- Search -->
+                <form method="GET" class="mb-3 d-flex gap-2" style="max-width:400px;">
+                    <input type="text" name="search" class="form-control form-control-sm"
+                           placeholder="Cari nama produk..." value="<?php echo htmlspecialchars($search); ?>" autofocus>
+                    <button type="submit" class="btn btn-primary btn-sm px-3">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <?php if ($search): ?>
+                    <a href="products.php" class="btn btn-outline-secondary btn-sm">Reset</a>
+                    <?php endif; ?>
+                </form>
+                <?php if ($search): ?>
+                <div class="mb-2 small text-muted">
+                    Menampilkan <?php echo count($products); ?> hasil untuk "<strong><?php echo htmlspecialchars($search); ?></strong>"
+                </div>
+                <?php endif; ?>
                 
                 <?php if ($error): ?>
                 <div class="alert alert-danger"><?php echo $error; ?></div>

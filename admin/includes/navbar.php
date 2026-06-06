@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light sticky-top" style="background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position:fixed; top:0; left:0; right:0; z-index:1030;">
     <div class="container-fluid">
         <a class="navbar-brand" href="<?php echo ADMIN_URL; ?>/dashboard.php" style="display: flex; align-items: center; gap: 10px;">
             <div class="logo-wrapper">

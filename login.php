@@ -20,10 +20,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch();
         
         if ($user && verifyPassword($password, $user['password'])) {
-            $_SESSION['customer_id'] = $user['id'];
-            $_SESSION['customer_name'] = $user['name'];
+            $customerId = $user['id'];
+
+            // ── Merge cart guest ke database sebelum set session ──
+            // Ambil cart guest dari session (sebelum di-overwrite oleh loadCartFromDb)
+            $guestCart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
+
+            $_SESSION['customer_id']    = $customerId;
+            $_SESSION['customer_name']  = $user['name'];
             $_SESSION['customer_email'] = $user['email'];
-            
+
+            if (!empty($guestCart)) {
+                foreach ($guestCart as $productId => $item) {
+                    $productId = (int)$productId;
+                    $qty       = (int)$item['quantity'];
+
+                    // Cek stok produk agar tidak melebihi
+                    $stmtStock = $pdo->prepare("SELECT stock FROM products WHERE id = ? AND is_active = 1");
+                    $stmtStock->execute([$productId]);
+                    $stock = $stmtStock->fetchColumn();
+                    if ($stock === false) continue; // produk tidak ada, skip
+
+                    // Cek apakah sudah ada di cart DB
+                    $stmtCheck = $pdo->prepare("SELECT id, quantity FROM cart WHERE user_id = ? AND product_id = ?");
+                    $stmtCheck->execute([$customerId, $productId]);
+                    $existing = $stmtCheck->fetch();
+
+                    if ($existing) {
+                        // Gabungkan quantity, tapi tidak boleh melebihi stok
+                        $newQty = min($existing['quantity'] + $qty, $stock);
+                        $pdo->prepare("UPDATE cart SET quantity = ? WHERE id = ?")
+                            ->execute([$newQty, $existing['id']]);
+                    } else {
+                        $newQty = min($qty, $stock);
+                        $pdo->prepare("INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)")
+                            ->execute([$customerId, $productId, $newQty]);
+                    }
+                }
+            }
+
+            // Sinkronisasi DB → session (termasuk item guest yang baru di-merge)
+            loadCartFromDb($pdo, $customerId);
+
             // Update last activity timestamp
             $stmt = $pdo->prepare("UPDATE users SET updated_at = NOW() WHERE id = ?");
             $stmt->execute([$user['id']]);

@@ -11,7 +11,7 @@ if (!$data) {
     exit('Invalid payload');
 }
 
-$serverKey   = $_ENV['MIDTRANS_SERVER_KEY'] ?? getenv('MIDTRANS_SERVER_KEY') ?? '';
+$serverKey   = getSetting($pdo, 'midtrans_server_key') ?: ($_ENV['MIDTRANS_SERVER_KEY'] ?? getenv('MIDTRANS_SERVER_KEY') ?? '');
 $orderId     = $data['order_id']          ?? '';
 $statusCode  = $data['status_code']       ?? '';
 $grossAmount = $data['gross_amount']      ?? '';

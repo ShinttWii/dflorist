@@ -1,38 +1,149 @@
-<?php
-$pageTitle = 'Beranda - D\'Florist';
+﻿<?php
+$pageTitle = "Beranda - D'Florist";
 include 'includes/header.php';
 
-// Ambil produk promo (hanya 4 untuk beranda)
-$stmt = $pdo->query("
-    SELECT p.*, c.name as category_name 
-    FROM products p 
-    JOIN categories c ON p.category_id = c.id 
-    WHERE p.is_promo = 1 AND p.is_active = 1 
-    LIMIT 4
-");
+$stmt = $pdo->query("SELECT p.*, c.name as category_name FROM products p JOIN categories c ON p.category_id = c.id WHERE p.is_promo = 1 AND p.is_active = 1 LIMIT 4");
 $promoProducts = $stmt->fetchAll();
 
-// Ambil ulasan terbaru
-$stmt = $pdo->query("
-    SELECT r.*, u.name as user_name, p.name as product_name 
-    FROM reviews r 
-    JOIN users u ON r.user_id = u.id 
-    JOIN products p ON r.product_id = p.id 
-    ORDER BY r.created_at DESC 
-    LIMIT 3
-");
+$stmt = $pdo->query("SELECT r.*, u.name as user_name, p.name as product_name FROM reviews r JOIN users u ON r.user_id = u.id JOIN products p ON r.product_id = p.id ORDER BY r.created_at DESC LIMIT 3");
 $recentReviews = $stmt->fetchAll();
+
+$bannerSlides = [];
+try { $bannerSlides = $pdo->query("SELECT * FROM banners WHERE is_active = 1 ORDER BY sort_order ASC")->fetchAll(); } catch(Exception $e) {}
+$heroImage = getSetting($pdo, 'hero_image') ?: '';
 ?>
 
 <!-- Hero Section -->
-<section class="hero-section">
+<section class="hero-section" <?php if ($heroImage): ?>style="background-image:linear-gradient(135deg,rgba(255,214,232,0.88) 0%,rgba(255,179,217,0.82) 100%),url('<?php echo SITE_URL.'/assets/images/'.htmlspecialchars($heroImage); ?>');background-size:cover;background-position:center;"<?php endif; ?>>
     <div class="container text-center">
         <h1 class="display-4 fw-bold mb-3">Selamat Datang di D'florist</h1>
         <p class="lead mb-4">Abadikan Setiap Momen dengan Keindahan yang Takkan Layu</p>
-        <a href="products.php" class="btn btn-primary btn-lg px-5">Lihat Produk</a>
+        <a href="products.php" class="btn btn-lg px-5" style="background:#fff;color:#FF69B4;border:2px solid #fff;font-weight:700;border-radius:30px;">Lihat Produk</a>
     </div>
 </section>
 
+<?php if (!empty($bannerSlides)): ?>
+<?php $slideCount = count($bannerSlides); ?>
+<div class="container mt-1 mb-3">
+    <div class="position-relative">
+        <?php if ($slideCount > 1): ?>
+        <button class="banner-btn-prev" onclick="slideBanner(-1)">&#10094;</button>
+        <button class="banner-btn-next" onclick="slideBanner(1)">&#10095;</button>
+        <?php endif; ?>
+
+        <div class="overflow-hidden rounded-4">
+            <div class="d-flex" id="bannerTrack" style="transition:transform .4s ease;">
+                <?php foreach ($bannerSlides as $b): ?>
+                <div class="flex-shrink-0" style="width:50%;padding:0 5px;box-sizing:border-box;"
+                     <?php if (!empty($b['link']) && $b['link'] !== '#'): ?>
+                     onclick="window.location.href='<?php echo htmlspecialchars($b['link']); ?>'"
+                     <?php endif; ?>>
+                    <img src="<?php echo SITE_URL; ?>/assets/images/banners/<?php echo htmlspecialchars($b['image']); ?>"
+                         class="w-100 rounded-3" style="height:280px;object-fit:cover;display:block;" alt="">
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <?php if ($slideCount > 1): ?>
+        <div class="text-center mt-2">
+            <?php for ($i = 0; $i < $slideCount; $i++): ?>
+            <span class="banner-dot <?php echo $i===0?'active':''; ?>" onclick="goToBanner(<?php echo $i; ?>)"></span>
+            <?php endfor; ?>
+        </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<style>
+.banner-btn-prev, .banner-btn-next {
+    position:absolute; top:45%; transform:translateY(-50%); z-index:10;
+    background:rgba(255,255,255,.9); border:none; border-radius:50%;
+    width:34px; height:34px; font-size:14px; cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,.15); display:flex; align-items:center; justify-content:center;
+}
+.banner-btn-prev { left:-12px; }
+.banner-btn-next { right:-12px; }
+.banner-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#ddd; margin:0 3px; cursor:pointer; transition:all .3s; }
+.banner-dot.active { background:#FF69B4; width:20px; border-radius:4px; }
+</style>
+
+<script>
+(function(){
+    var track = document.getElementById('bannerTrack');
+    if (!track) return;
+    var slides = track.children;
+    var total = slides.length;
+    if (total <= 1) return;
+
+    // Clone semua slide: taruh di akhir (untuk loop maju) dan di awal (untuk loop mundur)
+    var clonesBefore = [];
+    var clonesAfter = [];
+    for (var i = 0; i < total; i++) {
+        var cloneEnd = slides[i].cloneNode(true);
+        var cloneBeg = slides[total - 1 - i].cloneNode(true);
+        clonesAfter.push(cloneEnd);
+        clonesBefore.unshift(cloneBeg);
+    }
+    clonesBefore.forEach(function(c){ track.insertBefore(c, track.firstChild); });
+    clonesAfter.forEach(function(c){ track.appendChild(c); });
+
+    // Mulai dari posisi slide pertama asli (setelah clones awal)
+    var idx = total; // index real setelah prepend
+    var itemW = 50; // tiap slide 50% lebar
+    var isAnimating = false;
+
+    function setPos(animate) {
+        track.style.transition = animate ? 'transform .4s ease' : 'none';
+        track.style.transform = 'translateX(-' + (idx * itemW) + '%)';
+    }
+
+    function updateDots() {
+        var realIdx = ((idx - total) % total + total) % total;
+        document.querySelectorAll('.banner-dot').forEach(function(d,i){
+            d.classList.toggle('active', i === realIdx);
+        });
+    }
+
+    setPos(false);
+    updateDots();
+
+    track.addEventListener('transitionend', function(){
+        isAnimating = false;
+        var allCount = track.children.length;
+        // Kalau sudah melewati clone akhir → jump ke asli awal
+        if (idx >= allCount - total) {
+            idx = total;
+            setPos(false);
+        }
+        // Kalau sudah melewati clone awal → jump ke asli akhir
+        if (idx < total) {
+            idx = allCount - total - total + idx + total;
+            setPos(false);
+        }
+        updateDots();
+    });
+
+    window.slideBanner = function(dir) {
+        if (isAnimating) return;
+        isAnimating = true;
+        idx += dir;
+        setPos(true);
+        updateDots();
+    };
+
+    window.goToBanner = function(i) {
+        if (isAnimating) return;
+        isAnimating = true;
+        idx = total + i;
+        setPos(true);
+        updateDots();
+    };
+
+    setInterval(function(){ window.slideBanner(1); }, 4000);
+})();
+</script>
+<?php endif; ?>
 <!-- Produk Promo -->
 <section class="container my-5">
     <h2 class="text-center fw-bold mb-4">Produk Promo</h2>

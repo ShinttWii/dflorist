@@ -281,7 +281,7 @@ foreach ($orders as $order) {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($orders as $order): ?>
+                                            <?php foreach (array_slice($orders, 0, 4) as $order): ?>
                                             <tr>
                                                 <td><strong><?php echo $order['order_number']; ?></strong></td>
                                                 <td><?php echo date('d M Y', strtotime($order['created_at'])); ?></td>
@@ -301,6 +301,38 @@ foreach ($orders as $order) {
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <?php if (count($orders) > 4): ?>
+                                <div id="moreOrders" style="display:none;">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            <?php foreach (array_slice($orders, 4) as $order): ?>
+                                            <tr>
+                                                <td><strong><?php echo $order['order_number']; ?></strong></td>
+                                                <td><?php echo date('d M Y', strtotime($order['created_at'])); ?></td>
+                                                <td><?php echo formatRupiah($order['total']); ?></td>
+                                                <td>
+                                                    <span class="status-badge status-<?php echo $order['order_status']; ?>">
+                                                        <?php echo ucwords(str_replace('_', ' ', $order['order_status'])); ?>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="order_detail.php?id=<?php echo $order['id']; ?>" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="toggleOrders(this)">
+                                    <i class="fas fa-list me-1"></i> Lihat Semua Pesanan (<?php echo count($orders); ?>)
+                                </button>
+                                <?php endif; ?>
+
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -312,6 +344,17 @@ foreach ($orders as $order) {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+    function toggleOrders(btn) {
+        const more = document.getElementById('moreOrders');
+        if (more.style.display === 'none') {
+            more.style.display = 'block';
+            btn.innerHTML = '<i class="fas fa-chevron-up me-1"></i> Sembunyikan';
+        } else {
+            more.style.display = 'none';
+            btn.innerHTML = '<i class="fas fa-list me-1"></i> Lihat Semua Pesanan (<?php echo count($orders); ?>)';
+        }
+    }
+
     function toggleAddresses() {
         const otherAddresses = document.getElementById('otherAddresses');
         const toggleIcon = document.getElementById('toggleIcon');

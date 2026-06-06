@@ -56,9 +56,14 @@ $cancellationRequest = $stmt->fetch();
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Detail Pesanan</h1>
-                    <a href="<?php echo $order['order_status'] === 'dibatalkan' ? 'cancellation_requests.php?filter=cancelled' : 'orders.php'; ?>" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Kembali
-                    </a>
+                    <div class="d-flex gap-2">
+                        <button onclick="printLabel()" class="btn btn-outline-primary btn-sm no-print">
+                            <i class="fas fa-print me-1"></i> Cetak Label
+                        </button>
+                        <a href="<?php echo $order['order_status'] === 'dibatalkan' ? 'cancellation_requests.php?filter=cancelled' : 'orders.php'; ?>" class="btn btn-outline-secondary btn-sm no-print">
+                            <i class="fas fa-arrow-left"></i> Kembali
+                        </a>
+                    </div>
                 </div>
                 
                 <div class="row">
@@ -173,7 +178,7 @@ $cancellationRequest = $stmt->fetch();
                             <div class="card-body">
                                 <h6 class="fw-bold mb-3">Informasi Pembayaran</h6>
                                 <p class="mb-1"><strong>Metode:</strong></p>
-                                <p class="mb-2"><?php echo strtoupper($order['payment_method']); ?></p>
+                                <p class="mb-2"><?php echo formatPaymentMethod($order['payment_method']); ?></p>
                                 
                                 <p class="mb-1"><strong>Status:</strong></p>
                                 <p>
@@ -304,5 +309,79 @@ $cancellationRequest = $stmt->fetch();
     </style>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Label Cetak (hidden, muncul saat print) -->
+<div id="printLabel" style="display:none;">
+    <style>
+    @media print {
+        body > *:not(#printLabel) { display: none !important; }
+        #printLabel { display: block !important; }
+        @page { margin: 10mm; }
+    }
+    #printLabel {
+        font-family: Arial, sans-serif;
+        max-width: 400px;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 16px;
+    }
+    #printLabel .lbl-header {
+        text-align: center;
+        border-bottom: 2px dashed #333;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+    #printLabel .lbl-title { font-size: 18px; font-weight: bold; }
+    #printLabel .lbl-section { margin-bottom: 10px; }
+    #printLabel .lbl-label { font-size: 11px; color: #666; text-transform: uppercase; }
+    #printLabel .lbl-value { font-size: 14px; font-weight: bold; }
+    #printLabel .lbl-address { font-size: 13px; }
+    #printLabel .lbl-divider { border-top: 1px dashed #999; margin: 10px 0; }
+    #printLabel .lbl-products { font-size: 12px; }
+    </style>
+
+    <div class="lbl-header">
+        <div class="lbl-title">D'florist</div>
+        <div style="font-size:12px;">Label Pengiriman</div>
+    </div>
+
+    <div class="lbl-section">
+        <div class="lbl-label">Kepada</div>
+        <div class="lbl-value"><?php echo htmlspecialchars($order['recipient_name']); ?></div>
+        <div class="lbl-address"><?php echo htmlspecialchars($order['recipient_phone']); ?></div>
+        <div class="lbl-address"><?php echo htmlspecialchars($order['address']); ?></div>
+        <?php if ($order['address_notes']): ?>
+        <div class="lbl-address" style="color:#666;">Catatan: <?php echo htmlspecialchars($order['address_notes']); ?></div>
+        <?php endif; ?>
+    </div>
+
+    <div class="lbl-divider"></div>
+
+    <div class="lbl-section">
+        <div class="lbl-label">Dari</div>
+        <div class="lbl-value">D'florist</div>
+    </div>
+
+    <div class="lbl-divider"></div>
+
+    <div style="display:flex;justify-content:space-between;font-size:12px;">
+        <div>
+            <div class="lbl-label">Metode Pengiriman</div>
+            <div><?php echo ucwords(str_replace('_', ' ', $order['delivery_method'])); ?></div>
+        </div>
+        <div>
+            <div class="lbl-label">Tanggal Kirim</div>
+            <div><?php echo $order['delivery_date'] ? date('d M Y', strtotime($order['delivery_date'])) : '-'; ?></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function printLabel() {
+    document.getElementById('printLabel').style.display = 'block';
+    window.print();
+    document.getElementById('printLabel').style.display = 'none';
+}
+</script>
 </body>
 </html>

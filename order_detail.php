@@ -128,7 +128,7 @@ $cancellationRequest = $stmt->fetch();
                 <div class="card-body">
                     <h6 class="fw-bold mb-3">Informasi Pembayaran</h6>
                     <p class="mb-1"><strong>Metode:</strong></p>
-                    <p class="mb-2"><?php echo strtoupper($order['payment_method']); ?></p>
+                    <p class="mb-2"><?php echo formatPaymentMethod($order['payment_method']); ?></p>
                     
                     <p class="mb-1"><strong>Status:</strong></p>
                     <p>

@@ -86,8 +86,8 @@ $outlets = $pdo->query("SELECT * FROM outlets ORDER BY is_active DESC, name ASC"
     <?php include 'includes/sidebar.php'; ?>
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-bold mb-0">Manajemen Outlet</h4>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Manajemen Outlet</h1>
             <button class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#addOutletModal">
                 <i class="fas fa-plus me-1"></i> Tambah Outlet
             </button>

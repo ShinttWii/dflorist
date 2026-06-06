@@ -20,8 +20,6 @@ if ($promo) {
     $sql .= " AND p.is_promo = 1";
 }
 
-
-
 // Perbaikan Bagian Sorting
 if ($sort === 'price_asc') {
     $sql .= " ORDER BY (CASE WHEN p.is_promo = 1 AND p.promo_price > 0 THEN p.promo_price ELSE p.price END) ASC";
@@ -43,7 +41,6 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
 <div class="container my-5">
     <h2 class="fw-bold mb-4">Semua Produk</h2>
     
-    <!-- Filter -->
     <div class="row mb-4">
         <div class="col-md-7">
             <div class="btn-group flex-wrap" role="group">
@@ -63,32 +60,14 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
             </div>
         </div>
         <div class="col-md-2 mt-2 mt-md-0">
-    <select class="form-select" id="sortSelect">
-        <option value="">Urutkan</option>
-        <option value="price_asc" <?php echo $sort === 'price_asc' ? 'selected' : ''; ?>>Termurah</option>
-        <option value="price_desc" <?php echo $sort === 'price_desc' ? 'selected' : ''; ?>>Termahal</option>
-    </select>
-</div>
-
-<script>
-document.getElementById('sortSelect').addEventListener('change', function() {
-    const url = new URL(window.location.href);
-    const val = this.value;
-
-    if (val) {
-        url.searchParams.set('sort', val);
-    } else {
-        url.searchParams.delete('sort');
-    }
-    
-    // Pastikan halaman kembali ke 1 jika ada pagination, 
-    // tapi untuk kasus Anda ini akan menjaga category tetap ada di URL
-    window.location.href = url.toString();
-});
-</script>
+            <select class="form-select" id="sortSelect">
+                <option value="">Urutkan</option>
+                <option value="price_asc" <?php echo $sort === 'price_asc' ? 'selected' : ''; ?>>Termurah</option>
+                <option value="price_desc" <?php echo $sort === 'price_desc' ? 'selected' : ''; ?>>Termahal</option>
+            </select>
+        </div>
     </div>
     
-    <!-- Products Grid -->
     <div class="row g-4">
         <?php if (empty($products)): ?>
         <div class="col-12 text-center">
@@ -168,6 +147,27 @@ document.getElementById('sortSelect').addEventListener('change', function() {
 </div>
 
 <script>
+// Handler ganti sorting dropdown
+document.getElementById('sortSelect').addEventListener('change', function() {
+    const url = new URL(window.location.href);
+    const val = this.value;
+    if (val) {
+        url.searchParams.set('sort', val);
+    } else {
+        url.searchParams.delete('sort');
+    }
+    window.location.href = url.toString();
+});
+
+// Handler live search nama produk
+document.getElementById('productSearch').addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    document.querySelectorAll('.product-item').forEach(item => {
+        item.style.display = (!q || item.dataset.name.includes(q)) ? '' : 'none';
+    });
+});
+
+// Tambah kurang quantity di card
 function increaseQtyCard(productId, maxStock) {
     var qty = document.getElementById('qty-card-' + productId);
     var btnPlus = document.getElementById('btn-plus-card-' + productId);
@@ -191,16 +191,69 @@ function decreaseQtyCard(productId) {
         btnPlus.disabled = false;
     }
 }
-</script>
 
-<script>
-document.getElementById('productSearch').addEventListener('input', function() {
-    const q = this.value.trim().toLowerCase();
-    document.querySelectorAll('.product-item').forEach(item => {
-        item.style.display = (!q || item.dataset.name.includes(q)) ? '' : 'none';
+// ==========================================
+// FUNGSI UTAMA: AJAX Add To Cart
+// ==========================================
+function addToCartAjax(productId, quantity, button) {
+    // Kunci tombol agar user tidak spam klik saat proses berjalan
+    button.disabled = true;
+    const icon = button.querySelector('i');
+    const originalIconClass = icon.className;
+    icon.className = 'fas fa-spinner fa-spin'; // Ubah ikon jadi loading spun
+
+    // Kirim data menggunakan Fetch API ke add_to_cart.php
+    fetch('add_to_cart.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `product_id=${productId}&quantity=${quantity}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Update angka badge di navbar secara realtime
+            const badge = document.querySelector('.cart-count');
+            if (badge) {
+                badge.innerText = data.cart_count;
+                badge.style.display = data.cart_count > 0 ? 'inline-block' : 'none';
+            }
+            // Animasi centang pada tombol
+            const icon = button.querySelector('i');
+            icon.className = 'fas fa-check';
+            button.style.color = '#28a745';
+            setTimeout(() => {
+                icon.className = originalIconClass;
+                button.style.color = '';
+            }, 1200);
+            showToastNotif('Produk berhasil ditambahkan ke keranjang!');
+        } else {
+            alert(data.message || 'Gagal menambahkan produk.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan sistem atau koneksi putus.');
+    })
+    .finally(() => {
+        // Re-enable tombol setelah selesai (icon sudah dihandle di .then)
+        setTimeout(() => { button.disabled = false; }, 1300);
     });
-});
+}
+function showToastNotif(msg) {
+    let toast = document.getElementById('cartToastProducts');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'cartToastProducts';
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 24px;border-radius:20px;font-size:0.9rem;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 2200);
+}
 </script>
-
 
 <?php include 'includes/footer.php'; ?>

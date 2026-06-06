@@ -156,7 +156,7 @@ $orders = $stmt->fetchAll();
                                             }
                                             ?>
                                             <span class="badge <?php echo $isPaid ? 'bg-success' : 'bg-warning'; ?>">
-                                                <?php echo strtoupper($order['payment_method']); ?>
+                                                <?php echo $isPaid ? 'Dibayar' : 'Belum Dibayar'; ?>
                                             </span>
                                             <br>
                                             <small class="text-muted"><?php echo $isPaid ? 'LUNAS' : 'BELUM LUNAS'; ?></small>

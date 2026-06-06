@@ -116,14 +116,23 @@ function removeFromCart(productId) {
 
 // Check delivery quota
 function checkQuota(date, method) {
+    const noteEl = document.getElementById('quotaNote');
+    const noteText = document.getElementById('quotaNoteText');
+    if (noteEl) noteEl.style.display = 'none';
+
+    if (!date || !method) return;
+
     fetch(SITE_URL + '/api/check_quota.php?date=' + date + '&method=' + method)
         .then(response => response.json())
         .then(data => {
             if (!data.available) {
-                alert('Kuota pengiriman untuk tanggal ini sudah penuh');
-                return false;
+                if (noteEl && noteText) {
+                    noteText.textContent = 'Kuota pengiriman untuk tanggal ini sudah penuh, pilih tanggal lain.';
+                    noteEl.style.display = 'block';
+                }
+            } else {
+                if (noteEl) noteEl.style.display = 'none';
             }
-            return true;
         });
 }
 
@@ -186,16 +195,12 @@ function addToCartAjax(productId, quantity, btnEl) {
     fetch(SITE_URL + '/api/add_to_cart.php', { method: 'POST', body: fd })
         .then(r => r.json())
         .then(data => {
-            if (data.redirect) {
-                window.location.href = data.redirect;
-                return;
-            }
             if (data.success) {
                 // Update cart badge
-                const badge = document.querySelector('.cart-badge');
+                const badge = document.querySelector('.cart-count');
                 if (badge) {
                     badge.textContent = data.cart_count;
-                    badge.style.display = '';
+                    badge.style.display = data.cart_count > 0 ? '' : 'none';
                 }
 
                 // Animasi tombol

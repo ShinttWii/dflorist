@@ -121,6 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             ");
                             
                             foreach ($_SESSION['cart'] as $item) {
+                                // Skip item yang tidak dicentang
+                                if (empty($item['selected'])) continue;
                                 $itemSubtotal = $item['price'] * $item['quantity'];
                                 $stmt->execute([
                                     $orderId, $item['product_id'], $item['product_name'],
@@ -143,8 +145,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             
                             $pdo->commit();
                             
-                            // Clear cart
-                            unset($_SESSION['cart']);
+                            // Clear hanya item yang di-checkout (selected)
+                            foreach ($_SESSION['cart'] as $productId => $item) {
+                                if (!empty($item['selected'])) {
+                                    unset($_SESSION['cart'][$productId]);
+                                    if (isCustomerLoggedIn()) {
+                                        $pdo->prepare("DELETE FROM cart WHERE user_id=? AND product_id=?")
+                                            ->execute([$_SESSION['customer_id'], $productId]);
+                                    }
+                                }
+                            }
                             
                             // Midtrans: ke halaman pembayaran, COD: langsung sukses
                             if ($paymentMethod === 'midtrans') {
@@ -230,10 +240,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <h5 class="fw-bold mb-3" id="scheduleTitle">Jadwal Pengiriman</h5>
                         <div class="mb-3" id="deliveryDateContainer">
                             <label class="form-label" id="deliveryDateLabel">Pilih Tanggal Pengiriman</label>
-                            <select name="delivery_date" class="form-select" id="deliveryDate">
-                                <option value="">Pilih tanggal</option>
-                            </select>
+                            <input type="hidden" name="delivery_date" id="deliveryDate">
+                            
+                            <!-- Kalender Custom -->
+                            <div id="calendarPicker" class="calendar-picker">
+                                <div class="cal-header d-flex justify-content-between align-items-center mb-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="calPrev()">&#8249;</button>
+                                    <span id="calMonthYear" class="fw-semibold"></span>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="calNext()">&#8250;</button>
+                                </div>
+                                <div class="cal-days-header d-grid mb-1" style="grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:#888;">
+                                    <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                                </div>
+                                <div id="calGrid" class="d-grid" style="grid-template-columns:repeat(7,1fr);gap:3px;"></div>
+                            </div>
+
                             <small class="text-muted" id="preorderNote">Pre-order minimal H+<?php echo $minPreorderDays; ?> dari hari ini</small>
+                            <div id="selectedDateLabel" class="mt-1" style="font-size:13px;color:#FF69B4;display:none;">
+                                <i class="fas fa-calendar-check me-1"></i><span id="selectedDateText"></span>
+                            </div>
+                            <div id="quotaNote" class="mt-1" style="display:none;font-size:12px;color:#dc3545;">
+                                <i class="fas fa-exclamation-circle me-1"></i><span id="quotaNoteText"></span>
+                            </div>
                         </div>
                         <!-- Info ekspedisi (ganti tanggal) -->
                         <div id="ekspedisiScheduleInfo" style="display:none;">
@@ -319,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <i class="fas fa-money-bill-wave" style="color:#28a745;"></i>
                                     </div>
                                     <div class="pay-info">
-                                        <strong>COD (Cash on Delivery)</strong>
+                                        <strong>COD (Bayar di Tempat)</strong>
                                         <small>Bayar tunai saat pesanan tiba di tangan kamu</small>
                                     </div>
                                     <div class="pay-check"></div>
@@ -341,10 +369,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="card-body">
                         <h5 class="fw-bold mb-3">Ringkasan Pesanan</h5>
                         <?php
-                        // Subtotal harga normal (sebelum diskon)
+                        // Subtotal harga normal (sebelum diskon) - hanya item yang selected
                         $subtotalNormal = 0;
                         $totalDiscount = 0;
                         foreach ($_SESSION['cart'] as $item) {
+                            if (empty($item['selected'])) continue;
                             $origPrice = !empty($item['original_price']) ? $item['original_price'] : $item['price'];
                             $subtotalNormal += $origPrice * $item['quantity'];
                             if ($origPrice > $item['price']) {
@@ -381,6 +410,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <?php endif; ?>
 </div>
+
+<style>
+.calendar-picker { background:#fff; border:1px solid #e0e0e0; border-radius:12px; padding:12px; }
+.cal-day { text-align:center; padding:6px 2px; border-radius:8px; font-size:13px; cursor:pointer; transition:background .15s; }
+.cal-day:hover:not(.cal-disabled):not(.cal-empty) { background:#FFD6E8; }
+.cal-day.cal-selected { background:#FF69B4; color:#fff; font-weight:700; }
+.cal-day.cal-disabled { background:#fdecea; color:#e57373; cursor:not-allowed; font-weight:600; position:relative; }
+.cal-day.cal-disabled::after { content:''; position:absolute; inset:0; border-radius:8px; }
+.cal-day.cal-past { color:#ccc; cursor:not-allowed; }
+.cal-day.cal-empty { cursor:default; }
+.cal-day.cal-today { border:2px solid #FF69B4; }
+</style>
 
 <script>
 // Parse PHP variables safely
@@ -438,6 +479,128 @@ function generateDeliveryDates() {
 
 // Initialize delivery dates on page load
 generateDeliveryDates();
+
+// Cek kuota saat tanggal berubah
+document.getElementById('deliveryDate').addEventListener('change', function() {
+    var method = document.querySelector('input[name="delivery_method"]:checked')?.value;
+    if (method && this.value) checkQuota(this.value, method);
+});
+
+// ── KALENDER CUSTOM ──────────────────────────────────────────
+var calYear, calMonth, calFullDates = [], calMinDate, calMaxDate, calSelectedDate = '';
+
+function initCalendar(method) {
+    var today = new Date();
+    // Min date = today + minPreorderDays
+    calMinDate = new Date(today);
+    calMinDate.setDate(today.getDate() + minPreorderDays);
+    // Max date = today + minPreorderDays + 13 (14 hari pilihan)
+    calMaxDate = new Date(calMinDate);
+    calMaxDate.setDate(calMinDate.getDate() + 13);
+
+    calYear  = calMinDate.getFullYear();
+    calMonth = calMinDate.getMonth();
+
+    // Ambil tanggal penuh dari server
+    if (method && method !== 'ekspedisi') {
+        fetch(siteUrl + '/api/get_full_dates.php?method=' + method)
+            .then(r => r.json())
+            .then(d => { calFullDates = d.full_dates || []; renderCalendar(); });
+    } else {
+        calFullDates = [];
+        renderCalendar();
+    }
+}
+
+function renderCalendar() {
+    var months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    document.getElementById('calMonthYear').textContent = months[calMonth] + ' ' + calYear;
+
+    var grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+
+    var firstDay = new Date(calYear, calMonth, 1).getDay();
+    var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+    // Padding awal
+    for (var i = 0; i < firstDay; i++) {
+        var empty = document.createElement('div');
+        empty.className = 'cal-day cal-empty';
+        grid.appendChild(empty);
+    }
+
+    var today = new Date(); today.setHours(0,0,0,0);
+
+    for (var d = 1; d <= daysInMonth; d++) {
+        var date = new Date(calYear, calMonth, d);
+        var dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+        var el = document.createElement('div');
+        el.className = 'cal-day';
+        el.textContent = d;
+
+        var isFull    = calFullDates.indexOf(dateStr) >= 0;
+        var isPast    = date < calMinDate;
+        var isFuture  = date > calMaxDate;
+        var isToday   = date.getTime() === today.getTime();
+
+        if (isToday) el.classList.add('cal-today');
+
+        if (isPast || isFuture) {
+            el.classList.add('cal-past');
+            if (isFuture) {
+                el.title = 'Checkout lagi besok';
+                el.addEventListener('click', function() {
+                    var note = document.getElementById('quotaNote');
+                    var noteText = document.getElementById('quotaNoteText');
+                    if (note && noteText) {
+                        noteText.textContent = 'Tanggal ini belum tersedia. Checkout lagi besok untuk melihat tanggal baru.';
+                        note.style.color = '#888';
+                        note.style.display = 'block';
+                        setTimeout(function(){ note.style.display = 'none'; note.style.color = '#dc3545'; }, 3000);
+                    }
+                });
+            }
+        } else if (isFull) {
+            el.classList.add('cal-disabled');
+            el.title = 'Kuota penuh';
+        } else {
+            el.dataset.date = dateStr;
+            if (dateStr === calSelectedDate) el.classList.add('cal-selected');
+            el.addEventListener('click', function() {
+                calSelectedDate = this.dataset.date;
+                document.getElementById('deliveryDate').value = calSelectedDate;
+                // Update label
+                var parts = calSelectedDate.split('-');
+                var dObj = new Date(parts[0], parts[1]-1, parts[2]);
+                var days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+                var mns  = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                document.getElementById('selectedDateText').textContent = days[dObj.getDay()] + ', ' + dObj.getDate() + ' ' + mns[dObj.getMonth()] + ' ' + dObj.getFullYear();
+                document.getElementById('selectedDateLabel').style.display = 'block';
+                renderCalendar();
+                // Cek quota
+                var method = document.querySelector('input[name="delivery_method"]:checked')?.value;
+                if (method) checkQuota(calSelectedDate, method);
+                // Load time slots
+                var timeSlotSelect = document.getElementById('deliveryTime');
+                if (timeSlotSelect && (method === 'kurir_toko' || method === 'pick_up')) {
+                    loadTimeSlots(timeSlotSelect);
+                }
+            });
+        }
+        grid.appendChild(el);
+    }
+}
+
+function calPrev() {
+    calMonth--;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+}
+function calNext() {
+    calMonth++;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+}
 
 // Handle address selection
 document.querySelectorAll('input[name="address_id"]').forEach(radio => {
@@ -715,6 +878,7 @@ function attachDeliveryListeners(distance, cityId, outlet) {
             updateShippingCost(cost);
             document.getElementById('scheduleCard').style.display = 'block';
             updateTimeSlots(this.value);
+            initCalendar(this.value);
             updateCODAvailability(this.value);
             
             // Store courier info for form submission

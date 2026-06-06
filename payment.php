@@ -24,8 +24,8 @@ if ($order['payment_status'] === 'pending' && $order['payment_method'] === 'midt
     }
 }
 
-$clientKey    = $_ENV['MIDTRANS_CLIENT_KEY']   ?? getenv('MIDTRANS_CLIENT_KEY')   ?? '';
-$isProduction = ($_ENV['MIDTRANS_IS_PRODUCTION'] ?? getenv('MIDTRANS_IS_PRODUCTION') ?? 'false') === 'true';
+$clientKey    = getSetting($pdo, 'midtrans_client_key') ?: ($_ENV['MIDTRANS_CLIENT_KEY'] ?? getenv('MIDTRANS_CLIENT_KEY') ?? '');
+$isProduction = (getSetting($pdo, 'midtrans_is_production') ?: ($_ENV['MIDTRANS_IS_PRODUCTION'] ?? getenv('MIDTRANS_IS_PRODUCTION') ?? 'false')) === 'true';
 $snapUrl      = $isProduction ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js';
 ?>
 <style>

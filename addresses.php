@@ -393,7 +393,9 @@ window.addEventListener('DOMContentLoaded', () => {
                     const lng = parseFloat(data[0].lon);
                     map.setView([lat, lng], 16);
                     marker.setLatLng([lat, lng]);
-                    setCoords(lat, lng);
+                    // Jangan panggil setCoords — hanya geser pin, biarkan user konfirmasi
+                    document.getElementById('latitude').value  = lat;
+                    document.getElementById('longitude').value = lng;
                 }
             }).catch(() => {});
         }

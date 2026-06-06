@@ -344,7 +344,9 @@ h6 { font-size: 0.9rem; }
 
 /* Hero Section */
 .hero-section {
-    background-color: white;
+    background-color: var(--pink-pastel);
+    background-size: cover;
+    background-position: center;
     padding: 60px 0;
     border-radius: 0 0 40px 40px;
     margin-bottom: 40px;

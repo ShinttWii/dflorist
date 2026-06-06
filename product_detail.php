@@ -79,11 +79,8 @@ $finalPrice = $product['is_promo'] ? $product['promo_price'] : $product['price']
             
             <p class="mb-4" style="font-size: 0.9rem; line-height: 1.6;"><?php echo nl2br(htmlspecialchars($product['description'])); ?></p>
             
-            <form method="POST" action="cart.php">
-                <input type="hidden" name="action" value="add">
-                <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
-                <input type="hidden" name="product_name" value="<?php echo htmlspecialchars($product['name']); ?>">
-                <input type="hidden" name="price" value="<?php echo $finalPrice; ?>">
+            <form onsubmit="return false;">
+                <input type="hidden" id="detail-product-id" value="<?php echo $product['id']; ?>">
                 
                 <div class="mb-3">
                     <span class="badge bg-info">Stok Tersedia: <?php echo $product['stock']; ?></span>
@@ -104,7 +101,8 @@ $finalPrice = $product['is_promo'] ? $product['promo_price'] : $product['price']
                     </div>
                     <div class="col-auto">
                         <?php if ($product['stock'] > 0): ?>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="button" id="btn-add-to-cart" class="btn btn-primary"
+                            onclick="addToCartDetail(this)">
                             <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
                         </button>
                         <?php else: ?>
@@ -153,6 +151,51 @@ $finalPrice = $product['is_promo'] ? $product['promo_price'] : $product['price']
                         btnMinus.disabled = true;
                     }
                 }
+            }
+
+            function addToCartDetail(btnEl) {
+                var productId = document.getElementById('detail-product-id').value;
+                var quantity  = document.getElementById('quantity').value;
+
+                btnEl.disabled = true;
+                var originalHtml = btnEl.innerHTML;
+                btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+
+                var fd = new FormData();
+                fd.append('product_id', productId);
+                fd.append('quantity', quantity);
+
+                fetch(SITE_URL + '/api/add_to_cart.php', { method: 'POST', body: fd })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update badge keranjang di navbar
+                            var badge = document.querySelector('.cart-count');
+                            if (badge) {
+                                badge.textContent = data.cart_count;
+                                badge.style.display = data.cart_count > 0 ? '' : 'none';
+                            }
+                            btnEl.innerHTML = '<i class="fas fa-check"></i> Ditambahkan!';
+                            btnEl.classList.replace('btn-primary', 'btn-success');
+                            setTimeout(function() {
+                                btnEl.innerHTML = originalHtml;
+                                btnEl.classList.replace('btn-success', 'btn-primary');
+                                btnEl.disabled = false;
+                            }, 1500);
+                            if (typeof showCartToast === 'function') {
+                                showCartToast(data.message || 'Ditambahkan ke keranjang');
+                            }
+                        } else {
+                            alert(data.message || 'Gagal menambahkan produk');
+                            btnEl.innerHTML = originalHtml;
+                            btnEl.disabled = false;
+                        }
+                    })
+                    .catch(function() {
+                        alert('Terjadi kesalahan koneksi.');
+                        btnEl.innerHTML = originalHtml;
+                        btnEl.disabled = false;
+                    });
             }
             </script>
         </div>

@@ -75,6 +75,7 @@ $sql .= " ORDER BY created_at DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $orders = $stmt->fetchAll();
+$displayOrders = $orders;
 ?>
 
 <div class="container my-5">
@@ -108,7 +109,7 @@ $orders = $stmt->fetchAll();
     </div>
     <?php else: ?>
     
-    <?php foreach ($orders as $order): ?>
+    <?php foreach ($displayOrders as $order): ?>
     <?php
     // Check cancellation request status
     $stmt = $pdo->prepare("SELECT * FROM cancellation_requests WHERE order_id = ? ORDER BY created_at DESC LIMIT 1");
@@ -159,6 +160,19 @@ $orders = $stmt->fetchAll();
                     
                     <div class="mb-2">
                         <strong>Total: <?php echo formatRupiah($order['total']); ?></strong>
+                    </div>
+                    <?php 
+                    $isPaid = ($order['payment_method'] === 'cod')
+                        ? ($order['order_status'] === 'selesai')
+                        : ($order['payment_status'] === 'paid');
+                    ?>
+                    <div class="text-muted small mb-2">
+                        <i class="fas fa-credit-card"></i> Metode: <?php echo formatPaymentMethod($order['payment_method']); ?>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge <?php echo $isPaid ? 'bg-success' : 'bg-warning text-dark'; ?>">
+                            <?php echo $isPaid ? 'Dibayar' : 'Belum Dibayar'; ?>
+                        </span>
                     </div>
                     
                     <div class="text-muted small">
@@ -215,7 +229,7 @@ $orders = $stmt->fetchAll();
         </div>
     </div>
     <?php endforeach; ?>
-    
+
     <?php endif; ?>
 </div>
 

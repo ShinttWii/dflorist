@@ -180,7 +180,7 @@ $items = $stmt->fetchAll();
             <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i> 
                 <strong>Pembayaran Berhasil</strong><br>
-                Metode: <?php echo strtoupper($order['payment_method']); ?><br>
+                Metode: <?php echo formatPaymentMethod($order['payment_method']); ?><br>
                 Tanggal: <?php echo date('d M Y H:i', strtotime($order['updated_at'])); ?>
             </div>
             

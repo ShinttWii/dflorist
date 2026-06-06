@@ -30,9 +30,9 @@ if ($order['payment_status'] === 'paid') {
     exit;
 }
 
-// Load Midtrans config
-$serverKey = $_ENV['MIDTRANS_SERVER_KEY'] ?? getenv('MIDTRANS_SERVER_KEY') ?? '';
-$isProduction = ($_ENV['MIDTRANS_IS_PRODUCTION'] ?? getenv('MIDTRANS_IS_PRODUCTION') ?? 'false') === 'true';
+// Load Midtrans config — prioritas dari database settings, fallback ke .env
+$serverKey = getSetting($pdo, 'midtrans_server_key') ?: ($_ENV['MIDTRANS_SERVER_KEY'] ?? getenv('MIDTRANS_SERVER_KEY') ?? '');
+$isProduction = (getSetting($pdo, 'midtrans_is_production') ?: ($_ENV['MIDTRANS_IS_PRODUCTION'] ?? getenv('MIDTRANS_IS_PRODUCTION') ?? 'false')) === 'true';
 $baseUrl = $isProduction ? 'https://app.midtrans.com/snap/v1/transactions' : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
 
 // Get order items

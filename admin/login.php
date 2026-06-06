@@ -38,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_SESSION['admin_id'] = $user['id'];
                         $_SESSION['admin_name'] = $user['name'];
                         $_SESSION['admin_email'] = $user['email'];
+                        $_SESSION['admin_last_active'] = time();
                         header('Location: ' . ADMIN_URL . '/dashboard.php');
                         exit;
                     } else {
@@ -66,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_SESSION['admin_id'] = $admin['id'];
                         $_SESSION['admin_name'] = $admin['name'];
                         $_SESSION['admin_email'] = $admin['email'];
+                        $_SESSION['admin_last_active'] = time();
                         header('Location: ' . ADMIN_URL . '/dashboard.php');
                         exit;
                     } else {

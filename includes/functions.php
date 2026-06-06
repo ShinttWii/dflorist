@@ -1,25 +1,21 @@
 <?php
 /**
  * D'florist E-Commerce System
- * 
- * Sistem e-commerce untuk toko bunga dengan konsep pre-order dan pengiriman terjadwal.
+ * * Sistem e-commerce untuk toko bunga dengan konsep pre-order dan pengiriman terjadwal.
  * Mengadopsi best practices dari Alfagift (alfagift.id) dengan penyesuaian untuk toko bunga.
- * 
- * Fitur utama yang diadopsi dari Alfagift:
+ * * Fitur utama yang diadopsi dari Alfagift:
  * - Multi-address management dengan Google Maps
  * - Slot waktu pengiriman terjadwal
  * - Multiple metode pengiriman
  * - Checkout flow yang smooth
  * - Order tracking dengan timeline
  * - Review & rating system
- * 
- * Fitur khusus D'florist:
+ * * Fitur khusus D'florist:
  * - Pre-order minimal H+2
  * - Perhitungan jarak otomatis untuk metode pengiriman
  * - Sistem kuota pengiriman (max 5 per hari per metode)
  * - OTP untuk lupa password
- * 
- * @version 1.0.0
+ * * @version 1.0.0
  * @author D'florist Development Team
  * @reference Alfagift (alfagift.id)
  */
@@ -212,6 +208,47 @@ if (!function_exists('generateResetToken')) {
     }
 }
 
+// ==========================================
+// FUNGSI BARU: Load Cart dari Database
+// ==========================================
+if (!function_exists('loadCartFromDb')) {
+    function loadCartFromDb($pdo, $customerId) {
+        try {
+            $stmt = $pdo->prepare("
+                SELECT c.product_id, c.quantity,
+                       p.name, p.price, p.promo_price, p.is_promo, p.image, p.stock
+                FROM cart c
+                JOIN products p ON c.product_id = p.id
+                WHERE c.user_id = ?
+            ");
+            $stmt->execute([$customerId]);
+            $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $_SESSION['cart'] = [];
+
+            foreach ($cartItems as $item) {
+                $finalPrice = ($item['is_promo'] && $item['promo_price'] > 0)
+                    ? (float)$item['promo_price']
+                    : (float)$item['price'];
+
+                $_SESSION['cart'][$item['product_id']] = [
+                    'product_id'     => $item['product_id'],
+                    'product_name'   => $item['name'],
+                    'price'          => $finalPrice,
+                    'original_price' => (float)$item['price'],
+                    'is_promo'       => $item['is_promo'],
+                    'quantity'       => (int)$item['quantity'],
+                    'image'          => $item['image'],
+                    'stock'          => (int)$item['stock'],
+                    'selected'       => true,
+                ];
+            }
+        } catch (PDOException $e) {
+            error_log("D'Florist Cart Load Error: " . $e->getMessage());
+        }
+    }
+}
+
 // Fungsi untuk get cart total
 if (!function_exists('getCartTotal')) {
     function getCartTotal() {
@@ -296,6 +333,44 @@ if (!function_exists('calculateShippingCost')) {
         }
         
         return 0;
+    }
+}
+
+// ==========================================
+// FUNGSI: Format label metode pembayaran
+// ==========================================
+if (!function_exists('formatPaymentMethod')) {
+    function formatPaymentMethod($method) {
+        $labels = [
+            // Nilai saat order dibuat
+            'midtrans'      => 'Bayar Online (Midtrans)',
+            'cod'           => 'COD (Bayar di Tempat)',
+
+            // Nilai yang diisi Midtrans webhook setelah pembayaran berhasil
+            'credit_card'   => 'Kartu Kredit / Debit',
+            'qris'          => 'QRIS',
+            'gopay'         => 'GoPay',
+            'shopeepay'     => 'ShopeePay',
+            'bank_transfer' => 'Transfer Bank (Virtual Account)',
+            'bca_va'        => 'Transfer Bank BCA (Virtual Account)',
+            'bni_va'        => 'Transfer Bank BNI (Virtual Account)',
+            'bri_va'        => 'Transfer Bank BRI (Virtual Account)',
+            'permata_va'    => 'Transfer Bank Permata (Virtual Account)',
+            'other_va'      => 'Transfer Bank (Virtual Account)',
+            'echannel'      => 'Mandiri Bill Payment',
+            'cstore'        => 'Minimarket (Indomaret / Alfamart)',
+            'indomaret'     => 'Indomaret',
+            'alfamart'      => 'Alfamart',
+            'akulaku'       => 'Akulaku (Cicilan)',
+            'kredivo'       => 'Kredivo (Cicilan)',
+        ];
+
+        if (isset($labels[$method])) {
+            return $labels[$method];
+        }
+
+        // Fallback: ubah underscore jadi spasi, kapitalisasi tiap kata
+        return ucwords(str_replace('_', ' ', $method));
     }
 }
 
