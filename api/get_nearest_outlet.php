@@ -22,6 +22,8 @@ if ($lat === null || $lng === null || ($lat == 0 && $lng == 0)) {
             'outlet' => [
                 'id'        => $outlet['id'],
                 'name'      => $outlet['name'],
+                'address'   => $outlet['address'],
+                'phone'     => $outlet['phone'],
                 'distance'  => 0,
                 'latitude'  => $outlet['latitude'],
                 'longitude' => $outlet['longitude'],
@@ -51,6 +53,8 @@ if ($nearestOutlet) {
         'outlet' => [
             'id'        => $nearestOutlet['id'],
             'name'      => $nearestOutlet['name'],
+            'address'   => $nearestOutlet['address'],
+            'phone'     => $nearestOutlet['phone'],
             'distance'  => $nearestOutlet['distance'],
             'latitude'  => $nearestOutlet['latitude'],
             'longitude' => $nearestOutlet['longitude'],

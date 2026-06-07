@@ -169,11 +169,6 @@ $displayOrders = $orders;
                     <div class="text-muted small mb-2">
                         <i class="fas fa-credit-card"></i> Metode: <?php echo formatPaymentMethod($order['payment_method']); ?>
                     </div>
-                    <div class="mb-2">
-                        <span class="badge <?php echo $isPaid ? 'bg-success' : 'bg-warning text-dark'; ?>">
-                            <?php echo $isPaid ? 'Dibayar' : 'Belum Dibayar'; ?>
-                        </span>
-                    </div>
                     
                     <div class="text-muted small">
                         <i class="fas fa-truck"></i> <?php echo ucwords(str_replace('_', ' ', $order['delivery_method'])); ?>

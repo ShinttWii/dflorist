@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $pageTitle = 'Checkout - D\'Florist';
 include 'includes/header.php';
 
@@ -486,7 +486,7 @@ document.getElementById('deliveryDate').addEventListener('change', function() {
     if (method && this.value) checkQuota(this.value, method);
 });
 
-// ── KALENDER CUSTOM ──────────────────────────────────────────
+// â”€â”€ KALENDER CUSTOM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 var calYear, calMonth, calFullDates = [], calMinDate, calMaxDate, calSelectedDate = '';
 
 function initCalendar(method) {
@@ -638,7 +638,7 @@ function updateDeliveryMethods(lat, lng, cityId, cityName) {
 function doUpdateDeliveryMethods(lat, lng, cityId, cityName) {
     const container = document.getElementById('deliveryMethods');
 
-    // Kalau koordinat 0,0 — coba geocode dulu via address_id
+    // Kalau koordinat 0,0 â€” coba geocode dulu via address_id
     if (!lat || !lng || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
         const addrRadio = document.querySelector('input[name="address_id"]:checked');
         const addrId = addrRadio ? addrRadio.value : 0;
@@ -680,7 +680,7 @@ function doUpdateDeliveryMethods(lat, lng, cityId, cityName) {
             if (distance <= maxRadius) {
                 // Jarak dekat: Kurir Toko + Pick Up
                 html += buildMethodCard('kurir_toko', 'kurirToko', '<i class="fas fa-motorcycle"></i> Kurir Toko', 'Jarak: ' + distance.toFixed(2) + ' km dari outlet', 'Memuat...', 'text-primary', true);
-                html += buildMethodCard('pick_up', 'pickUp', '<i class="fas fa-store"></i> Pick Up', 'Ambil di: ' + outlet.name, 'Gratis', 'text-success', false);
+                html += buildMethodCard('pick_up', 'pickUp', '<i class="fas fa-store"></i> Pick Up', outlet.name + (outlet.address ? '<br><small class="text-muted">' + outlet.address + '</small>' : ''), 'Gratis', 'text-success', false);
                 container.innerHTML = html;
                 
                 // Fetch kurir toko cost
@@ -699,7 +699,7 @@ function doUpdateDeliveryMethods(lat, lng, cityId, cityName) {
                 } else {
                     html += '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Alamat tidak memiliki data kota. <a href="addresses.php">Update alamat</a> untuk melihat ongkir ekspedisi.</div>';
                 }
-                html += buildMethodCard('pick_up', 'pickUp', '<i class="fas fa-store"></i> Pick Up', 'Ambil di: ' + outlet.name, 'Gratis', 'text-success', false);
+                html += buildMethodCard('pick_up', 'pickUp', '<i class="fas fa-store"></i> Pick Up', outlet.name + (outlet.address ? '<br><small class="text-muted">' + outlet.address + '</small>' : ''), 'Gratis', 'text-success', false);
                 container.innerHTML = html;
                 
                 if (cityId) {
@@ -715,7 +715,7 @@ function doUpdateDeliveryMethods(lat, lng, cityId, cityName) {
 }
 
 function renderAllMethods(container, cityId, cityName) {
-    // Koordinat tidak tersedia — gunakan city_id untuk tentukan dekat/jauh
+    // Koordinat tidak tersedia â€” gunakan city_id untuk tentukan dekat/jauh
     // Ambil outlet dengan city_id untuk perbandingan
     fetch(siteUrl + '/api/get_nearest_outlet.php?lat=0&lng=0')
         .then(r => r.json())
@@ -734,7 +734,7 @@ function renderAllMethods(container, cityId, cityName) {
             if (isNearby) {
                 // Dekat: kurir toko + pick up
                 html += buildMethodCard('kurir_toko', 'kurirToko', '<i class="fas fa-motorcycle"></i> Kurir Toko', 'Pengiriman ke alamat Anda', 'Memuat...', 'text-primary', false);
-                html += buildMethodCard('pick_up', 'pickUp', '<i class="fas fa-store"></i> Pick Up', 'Ambil di: ' + outlet.name, 'Gratis', 'text-success', false);
+                html += buildMethodCard('pick_up', 'pickUp', '<i class="fas fa-store"></i> Pick Up', outlet.name + (outlet.address ? '<br><small class="text-muted">' + outlet.address + '</small>' : ''), 'Gratis', 'text-success', false);
                 container.innerHTML = html;
                 fetch(siteUrl + '/api/calculate_shipping.php?method=kurir_toko&distance=1')
                     .then(r => r.json()).then(d => {
@@ -748,7 +748,7 @@ function renderAllMethods(container, cityId, cityName) {
                 } else {
                     html += '<div class="alert alert-warning small"><i class="fas fa-exclamation-triangle"></i> Tambahkan kota di <a href="addresses.php">alamat</a> untuk ekspedisi</div>';
                 }
-                html += buildMethodCard('pick_up', 'pickUp', '<i class="fas fa-store"></i> Pick Up', 'Ambil di: ' + outlet.name, 'Gratis', 'text-success', false);
+                html += buildMethodCard('pick_up', 'pickUp', '<i class="fas fa-store"></i> Pick Up', outlet.name + (outlet.address ? '<br><small class="text-muted">' + outlet.address + '</small>' : ''), 'Gratis', 'text-success', false);
                 container.innerHTML = html;
                 if (cityId) loadEkspedisiOptions(cityId, cityName, outlet);
             }
@@ -1002,3 +1002,4 @@ function formatRupiah(amount) {
 </script>
 
 <?php include 'includes/footer.php'; ?>
+

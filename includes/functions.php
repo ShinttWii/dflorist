@@ -185,7 +185,16 @@ if (!function_exists('isCustomerLoggedIn')) {
 // Fungsi untuk cek login admin
 if (!function_exists('isAdminLoggedIn')) {
     function isAdminLoggedIn() {
-        return isset($_SESSION['admin_id']);
+        if (!isset($_SESSION['admin_id'])) return false;
+        // Timeout 2 menit (120 detik)
+        $timeout = 600;
+        if (isset($_SESSION['admin_last_active']) && (time() - $_SESSION['admin_last_active']) > $timeout) {
+            session_unset();
+            session_destroy();
+            return false;
+        }
+        $_SESSION['admin_last_active'] = time();
+        return true;
     }
 }
 
@@ -341,36 +350,11 @@ if (!function_exists('calculateShippingCost')) {
 // ==========================================
 if (!function_exists('formatPaymentMethod')) {
     function formatPaymentMethod($method) {
-        $labels = [
-            // Nilai saat order dibuat
-            'midtrans'      => 'Bayar Online (Midtrans)',
-            'cod'           => 'COD (Bayar di Tempat)',
-
-            // Nilai yang diisi Midtrans webhook setelah pembayaran berhasil
-            'credit_card'   => 'Kartu Kredit / Debit',
-            'qris'          => 'QRIS',
-            'gopay'         => 'GoPay',
-            'shopeepay'     => 'ShopeePay',
-            'bank_transfer' => 'Transfer Bank (Virtual Account)',
-            'bca_va'        => 'Transfer Bank BCA (Virtual Account)',
-            'bni_va'        => 'Transfer Bank BNI (Virtual Account)',
-            'bri_va'        => 'Transfer Bank BRI (Virtual Account)',
-            'permata_va'    => 'Transfer Bank Permata (Virtual Account)',
-            'other_va'      => 'Transfer Bank (Virtual Account)',
-            'echannel'      => 'Mandiri Bill Payment',
-            'cstore'        => 'Minimarket (Indomaret / Alfamart)',
-            'indomaret'     => 'Indomaret',
-            'alfamart'      => 'Alfamart',
-            'akulaku'       => 'Akulaku (Cicilan)',
-            'kredivo'       => 'Kredivo (Cicilan)',
-        ];
-
-        if (isset($labels[$method])) {
-            return $labels[$method];
+        if ($method === 'cod') {
+            return 'COD (Bayar di Tempat)';
         }
-
-        // Fallback: ubah underscore jadi spasi, kapitalisasi tiap kata
-        return ucwords(str_replace('_', ' ', $method));
+        // Semua metode Midtrans (midtrans, bank_transfer, qris, gopay, dll) = Bayar Online
+        return 'Bayar Online';
     }
 }
 

@@ -24,6 +24,9 @@ if (!$order) {
     redirect('orders.php');
 }
 
+// Ambil outlet aktif untuk pickup
+$activeOutlet = $pdo->query("SELECT * FROM outlets WHERE is_active = 1 ORDER BY id ASC LIMIT 1")->fetch();
+
 // Get order items
 $stmt = $pdo->prepare("SELECT * FROM order_items WHERE order_id = ?");
 $stmt->execute([$orderId]);
@@ -89,6 +92,16 @@ $cancellationRequest = $stmt->fetch();
                             <p class="mb-1"><strong>Metode:</strong></p>
                             <p><?php echo ucwords(str_replace('_', ' ', $order['delivery_method'])); ?></p>
                         </div>
+                        <?php if ($order['delivery_method'] === 'pick_up' && $activeOutlet): ?>
+                        <div class="col-12">
+                            <p class="mb-1"><strong>Lokasi Pickup:</strong></p>
+                            <p class="mb-0"><?php echo htmlspecialchars($activeOutlet['name']); ?></p>
+                            <p class="text-muted small mb-0"><?php echo htmlspecialchars($activeOutlet['address']); ?></p>
+                            <?php if ($activeOutlet['phone']): ?>
+                            <p class="text-muted small mb-0"><i class="fas fa-phone me-1"></i><?php echo htmlspecialchars($activeOutlet['phone']); ?></p>
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
                         <div class="col-md-6">
                             <p class="mb-1"><strong>Tanggal:</strong></p>
                             <p><?php echo date('d M Y', strtotime($order['delivery_date'])); ?></p>
