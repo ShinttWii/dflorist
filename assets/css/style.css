@@ -1023,12 +1023,6 @@ a:hover {
     /* 2-column product grid */
     .row.row-cols-2 > * { padding: 6px; }
 
-    /* Checkout 2 col stacked */
-    .col-md-8, .col-md-4 { width: 100%; }
-
-    /* Order detail stacked */
-    .col-md-8, .col-md-4 { max-width: 100%; flex: 0 0 100%; }
-
     /* Receipt */
     .receipt-container { padding: 16px; }
 
