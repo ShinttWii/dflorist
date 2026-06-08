@@ -934,3 +934,98 @@ a:hover {
         font-size: 1.1rem;
     }
 }
+
+/* ========================================
+   MOBILE RESPONSIVE FIXES
+   ======================================== */
+
+@media (max-width: 576px) {
+    /* Container padding */
+    .container { padding-left: 12px; padding-right: 12px; }
+
+    /* Hero section */
+    .hero-section { padding: 30px 0; border-radius: 0 0 20px 20px; margin-bottom: 20px; }
+    .hero-section h1 { font-size: 1.4rem; }
+    .hero-section .lead { font-size: 0.85rem; }
+
+    /* Product cards - 2 kolom di mobile */
+    .product-card { max-width: 100%; }
+    .product-card img { height: 140px; }
+    .product-card .card-title { font-size: 0.8rem; min-height: 2.4em; }
+    .product-card .btn-primary { font-size: 0.75rem; padding: 0.35rem 0.6rem; }
+    .cart-icon-btn { font-size: 1.4rem !important; }
+
+    /* Navbar */
+    .navbar { padding: 0.4rem 0; }
+    .brand-text { font-size: 1.1rem; }
+    .logo-wrapper { padding: 6px 8px; }
+    .logo-img { height: 28px; }
+
+    /* Cards */
+    .card { border-radius: 14px; }
+    .card-body { padding: 0.8rem; }
+
+    /* Checkout page */
+    .address-card { padding: 0.8rem; }
+    .pay-option + label { padding: 10px 12px; gap: 10px; }
+    .pay-icon { width: 36px; height: 36px; font-size: 16px; }
+    .pay-badges { gap: 3px; }
+    .pay-badge { font-size: 9px; padding: 2px 5px; }
+
+    /* Orders page */
+    .status-badge { font-size: 0.75rem; padding: 4px 10px; }
+    .btn-sm { font-size: 0.75rem; padding: 0.3rem 0.6rem; }
+
+    /* Payment page */
+    .pw { padding: 16px 0 60px; }
+    .ph { padding: 14px 16px; }
+    .pb { padding: 14px 16px; }
+    .pm { grid-template-columns: repeat(3,1fr); gap: 6px; padding: 0 16px 12px; }
+    .pmi { padding: 8px 4px; }
+    .pmi i { font-size: 14px; }
+    .pmi span { font-size: 9px; }
+    .pn { margin: 0 16px 12px; }
+    .pbtn { padding: 12px; font-size: 14px; }
+
+    /* Cart page */
+    .cart-item-img { width: 60px !important; height: 60px !important; }
+
+    /* Form pages */
+    .form-control, .form-select { font-size: 0.85rem; padding: 0.5rem 0.75rem; }
+    .form-label { font-size: 0.85rem; }
+
+    /* Headings */
+    h2 { font-size: 1.3rem; }
+    h4 { font-size: 1rem; }
+    h5 { font-size: 0.95rem; }
+
+    /* Footer */
+    footer { padding: 1rem 0; margin-top: 2rem; }
+    footer h5 { font-size: 0.9rem; }
+    footer p, footer a { font-size: 0.8rem; }
+
+    /* Tables - horizontal scroll */
+    .table-responsive { font-size: 0.8rem; }
+
+    /* My orders */
+    .my-5 { margin-top: 1.5rem !important; margin-bottom: 1.5rem !important; }
+    .mb-4 { margin-bottom: 1rem !important; }
+}
+
+@media (max-width: 768px) {
+    /* 2-column product grid */
+    .row.row-cols-2 > * { padding: 6px; }
+
+    /* Checkout 2 col stacked */
+    .col-md-8, .col-md-4 { width: 100%; }
+
+    /* Order detail stacked */
+    .col-md-8, .col-md-4 { max-width: 100%; flex: 0 0 100%; }
+
+    /* Receipt */
+    .receipt-container { padding: 16px; }
+
+    /* Btn group wrap */
+    .btn-group { flex-wrap: wrap; gap: 4px; }
+    .btn-group .btn { font-size: 0.75rem; padding: 0.3rem 0.5rem; }
+}

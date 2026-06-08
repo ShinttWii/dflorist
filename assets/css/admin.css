@@ -7,6 +7,14 @@ body {
     padding-top: 56px;
 }
 
+/* Desktop: main content offset dari sidebar */
+@media (min-width: 768px) {
+    main.col-md-9, main.col-lg-10 {
+        margin-left: 200px;
+    }
+}
+
+
 /* Logo Styles */
 .logo-wrapper {
     background: #FFD6E8;

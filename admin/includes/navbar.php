@@ -1,5 +1,9 @@
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position:fixed; top:0; left:0; right:0; z-index:1030;">
     <div class="container-fluid">
+        <!-- Hamburger untuk mobile -->
+        <button class="btn btn-link d-md-none me-2 p-1" onclick="openSidebar()" style="color:#FF69B4;font-size:20px;border:none;">
+            <i class="fas fa-bars"></i>
+        </button>
         <a class="navbar-brand" href="<?php echo ADMIN_URL; ?>/dashboard.php" style="display: flex; align-items: center; gap: 10px;">
             <div class="logo-wrapper">
                 <img src="<?php echo SITE_URL; ?>/assets/images/logo.png" alt="D'florist Logo" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
