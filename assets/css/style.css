@@ -939,7 +939,14 @@ a:hover {
    MOBILE RESPONSIVE FIXES
    ======================================== */
 
+/* Spacing konten dari navbar */
+.container.my-5 { margin-top: 2rem !important; }
+
 @media (max-width: 576px) {
+    .container.my-5 { margin-top: 1.2rem !important; margin-bottom: 1.2rem !important; }
+    .my-5 { margin-top: 1.2rem !important; margin-bottom: 1.2rem !important; }
+    .mb-4 { margin-bottom: 0.8rem !important; }
+    h2.fw-bold { margin-bottom: 0.8rem !important; }
     /* Container padding */
     .container { padding-left: 12px; padding-right: 12px; }
 

@@ -4,7 +4,7 @@
 body {
     font-family: 'Poppins', sans-serif;
     background-color: #C5E3F6;
-    padding-top: 56px;
+    padding-top: 70px;
 }
 
 /* Desktop: main content offset dari sidebar */
@@ -12,6 +12,10 @@ body {
     main.col-md-9, main.col-lg-10 {
         margin-left: 200px;
     }
+}
+
+main.col-md-9, main.col-lg-10 {
+    padding-top: 1.5rem;
 }
 
 
