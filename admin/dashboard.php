@@ -66,17 +66,17 @@ $recentOrders   = $pdo->query("SELECT o.*, u.name AS customer_name FROM orders o
     </div>
 
     <!-- Row 1: Stat Cards -->
-    <div class="row g-3 mb-3">
+    <div class="row g-2 g-md-3 mb-3">
         <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div style="background:#e8f4fd;width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-shopping-bag" style="color:#007bff;font-size:18px;"></i>
+                <div class="card-body p-2 p-md-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="background:#e8f4fd;width:38px;height:38px;min-width:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-shopping-bag" style="color:#007bff;font-size:15px;"></i>
                         </div>
-                        <div>
-                            <div class="fw-bold fs-4 lh-1"><?php echo $totalOrders; ?></div>
-                            <div class="text-muted small">Total Pesanan</div>
+                        <div style="min-width:0;">
+                            <div class="fw-bold lh-1" style="font-size:1.3rem;"><?php echo $totalOrders; ?></div>
+                            <div class="text-muted" style="font-size:11px;white-space:nowrap;">Total Pesanan</div>
                         </div>
                     </div>
                 </div>
@@ -84,29 +84,14 @@ $recentOrders   = $pdo->query("SELECT o.*, u.name AS customer_name FROM orders o
         </div>
         <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div style="background:#fce8f3;width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-wallet" style="color:#FF69B4;font-size:18px;"></i>
+                <div class="card-body p-2 p-md-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="background:#fce8f3;width:38px;height:38px;min-width:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-wallet" style="color:#FF69B4;font-size:15px;"></i>
                         </div>
-                        <div>
-                            <div class="fw-bold lh-1" style="font-size:15px;color:#FF69B4;"><?php echo formatRupiah($revenueMonth); ?></div>
-                            <div class="text-muted small">Pendapatan Bulan Ini</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div style="background:#e8f8f0;width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-coins" style="color:#28a745;font-size:18px;"></i>
-                        </div>
-                        <div>
-                            <div class="fw-bold lh-1" style="font-size:15px;color:#28a745;"><?php echo formatRupiah($totalRevenue); ?></div>
-                            <div class="text-muted small">Total Pendapatan</div>
+                        <div style="min-width:0;">
+                            <div class="fw-bold lh-1" style="font-size:12px;color:#FF69B4;"><?php echo formatRupiah($revenueMonth); ?></div>
+                            <div class="text-muted" style="font-size:11px;">Bln Ini</div>
                         </div>
                     </div>
                 </div>
@@ -114,14 +99,29 @@ $recentOrders   = $pdo->query("SELECT o.*, u.name AS customer_name FROM orders o
         </div>
         <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div style="background:#e8f7fd;width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-users" style="color:#17a2b8;font-size:18px;"></i>
+                <div class="card-body p-2 p-md-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="background:#e8f8f0;width:38px;height:38px;min-width:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-coins" style="color:#28a745;font-size:15px;"></i>
                         </div>
-                        <div>
-                            <div class="fw-bold fs-4 lh-1"><?php echo $totalCustomers; ?></div>
-                            <div class="text-muted small">Total Pelanggan</div>
+                        <div style="min-width:0;">
+                            <div class="fw-bold lh-1" style="font-size:12px;color:#28a745;"><?php echo formatRupiah($totalRevenue); ?></div>
+                            <div class="text-muted" style="font-size:11px;">Total</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-2 p-md-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="background:#e8f7fd;width:38px;height:38px;min-width:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-users" style="color:#17a2b8;font-size:15px;"></i>
+                        </div>
+                        <div style="min-width:0;">
+                            <div class="fw-bold lh-1" style="font-size:1.3rem;"><?php echo $totalCustomers; ?></div>
+                            <div class="text-muted" style="font-size:11px;white-space:nowrap;">Pelanggan</div>
                         </div>
                     </div>
                 </div>
@@ -174,33 +174,56 @@ $recentOrders   = $pdo->query("SELECT o.*, u.name AS customer_name FROM orders o
                     <h6 class="mb-0 fw-bold">Pesanan Terbaru</h6>
                     <a href="orders.php" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-sm mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">No. Pesanan</th>
-                                    <th>Pelanggan</th>
-                                    <th class="text-end">Total</th>
-                                    <th>Status</th>
-                                    <th>Tanggal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recentOrders as $order): ?>
-                                <tr onclick="location.href='order_detail.php?id=<?php echo $order['id']; ?>'" style="cursor:pointer;">
-                                    <td class="ps-3 small fw-semibold" style="color:#FF69B4;"><?php echo $order['order_number']; ?></td>
-                                    <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
-                                    <td class="text-end small"><?php echo formatRupiah($order['total']); ?></td>
-                                    <td><span class="status-badge status-<?php echo $order['order_status']; ?>" style="font-size:.7rem;">
-                                        <?php echo ucwords(str_replace('_', ' ', $order['order_status'])); ?>
-                                    </span></td>
-                                    <td class="small text-muted"><?php echo date('d M', strtotime($order['created_at'])); ?></td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                <!-- Desktop: tabel -->
+                <div class="d-none d-md-block">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">No. Pesanan</th>
+                                <th>Pelanggan</th>
+                                <th class="text-end">Total</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recentOrders as $order): ?>
+                            <tr onclick="location.href='order_detail.php?id=<?php echo $order['id']; ?>'" style="cursor:pointer;">
+                                <td class="ps-3 small fw-semibold" style="color:#FF69B4;"><?php echo $order['order_number']; ?></td>
+                                <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
+                                <td class="text-end small"><?php echo formatRupiah($order['total']); ?></td>
+                                <td><span class="status-badge status-<?php echo $order['order_status']; ?>" style="font-size:.7rem;">
+                                    <?php echo ucwords(str_replace('_', ' ', $order['order_status'])); ?>
+                                </span></td>
+                                <td class="small text-muted"><?php echo date('d M', strtotime($order['created_at'])); ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+                <!-- Mobile: card list -->
+                <div class="d-md-none">
+                <?php foreach ($recentOrders as $order): ?>
+                <a href="order_detail.php?id=<?php echo $order['id']; ?>" class="text-decoration-none">
+                <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div style="font-size:12px;font-weight:700;color:#FF69B4;"><?php echo $order['order_number']; ?></div>
+                            <div style="font-size:13px;color:#333;"><?php echo htmlspecialchars($order['customer_name']); ?></div>
+                            <div style="font-size:11px;color:#999;"><?php echo date('d M Y', strtotime($order['created_at'])); ?></div>
+                        </div>
+                        <div class="text-end">
+                            <div style="font-size:13px;font-weight:700;color:#333;"><?php echo formatRupiah($order['total']); ?></div>
+                            <span class="status-badge status-<?php echo $order['order_status']; ?>" style="font-size:.65rem;">
+                                <?php echo ucwords(str_replace('_', ' ', $order['order_status'])); ?>
+                            </span>
+                        </div>
                     </div>
+                </div>
+                </a>
+                <?php endforeach; ?>
                 </div>
             </div>
         </div>
