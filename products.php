@@ -75,7 +75,7 @@ $categories = $pdo->query("SELECT * FROM categories")->fetchAll();
         </div>
         <?php else: ?>
             <?php foreach ($products as $product): ?>
-            <div class="col-md-3 product-item" data-name="<?php echo strtolower(htmlspecialchars($product['name'])); ?>">
+            <div class="col-6 col-md-3 product-item" data-name="<?php echo strtolower(htmlspecialchars($product['name'])); ?>">`
                 <div class="card product-card position-relative">
                     <?php if ($product['is_promo']): ?>
                     <span class="badge-promo">PROMO</span>

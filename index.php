@@ -62,8 +62,8 @@ $heroImage = getSetting($pdo, 'hero_image') ?: '';
     width:34px; height:34px; font-size:14px; cursor:pointer;
     box-shadow:0 2px 8px rgba(0,0,0,.15); display:flex; align-items:center; justify-content:center;
 }
-.banner-btn-prev { left:-12px; }
-.banner-btn-next { right:-12px; }
+.banner-btn-prev { left: 4px; }
+.banner-btn-next { right: 4px; }
 .banner-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#ddd; margin:0 3px; cursor:pointer; transition:all .3s; }
 .banner-dot.active { background:#FF69B4; width:20px; border-radius:4px; }
 </style>
@@ -154,8 +154,7 @@ $heroImage = getSetting($pdo, 'hero_image') ?: '';
         </div>
         <?php else: ?>
             <?php foreach ($promoProducts as $product): ?>
-            <div class="col-md-3">
-                <div class="card product-card position-relative">
+            <div class="col-6 col-md-3">
                     <span class="badge-promo">PROMO</span>
                     <a href="product_detail.php?id=<?php echo $product['id']; ?>">
                         <img src="<?php echo $product['image'] ? UPLOAD_URL . $product['image'] : 'https://via.placeholder.com/300x250'; ?>" 

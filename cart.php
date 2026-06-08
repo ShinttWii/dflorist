@@ -224,7 +224,7 @@ $selectedOriginalTotal = $selectedTotal + $selectedDiscount;
                     ?>
                     <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
                         <!-- Checkbox -->
-                        <div class="me-2">
+                        <div class="me-2 flex-shrink-0">
                             <form method="POST">
                                 <input type="hidden" name="action" value="toggle_select">
                                 <input type="hidden" name="product_id" value="<?php echo $item['product_id']; ?>">
@@ -233,43 +233,43 @@ $selectedOriginalTotal = $selectedTotal + $selectedDiscount;
                         </div>
                         
                         <!-- Product Image -->
-                        <div class="me-3">
+                        <div class="me-2 me-md-3 flex-shrink-0">
                             <?php
                             $imagePath = isset($item['image']) && $item['image'] ? UPLOAD_URL . $item['image'] : 'https://via.placeholder.com/80';
                             ?>
                             <img src="<?php echo $imagePath; ?>" 
                                  alt="<?php echo htmlspecialchars($item['product_name']); ?>"
-                                 style="width: 70px; height: 70px; object-fit: cover; border-radius: 10px;"
+                                 class="cart-item-img"
                                  onerror="this.src='https://via.placeholder.com/80'">
                         </div>
                         
                         <!-- Product Info -->
-                        <div class="flex-grow-1 me-3">
-                            <h6 class="mb-1" style="font-size: 0.95rem;"><?php echo htmlspecialchars($item['product_name']); ?></h6>
+                        <div class="flex-grow-1 me-2 cart-item-info" style="min-width:0;">
+                            <h6 class="mb-1 cart-item-name text-truncate"><?php echo htmlspecialchars($item['product_name']); ?></h6>
                             <div>
                                 <?php if ($isPromo): ?>
-                                    <span class="text-decoration-line-through text-muted" style="font-size: 0.85rem;">
+                                    <span class="text-decoration-line-through text-muted cart-price-old">
                                         <?php echo formatRupiah($item['original_price']); ?>
                                     </span>
-                                    <span class="text-danger fw-bold ms-2" style="font-size: 0.9rem;">
+                                    <span class="text-danger fw-bold ms-1 cart-price">
                                         <?php echo formatRupiah($item['price']); ?>
                                     </span>
                                 <?php else: ?>
-                                    <span class="fw-bold" style="font-size: 0.9rem;">
+                                    <span class="fw-bold cart-price">
                                         <?php echo formatRupiah($item['price']); ?>
                                     </span>
                                 <?php endif; ?>
                             </div>
-                            <small class="text-muted" style="font-size: 0.75rem;">Stok: <?php echo $maxStock; ?></small>
+                            <small class="text-muted cart-stock">Stok: <?php echo $maxStock; ?></small>
                         </div>
                         
                         <!-- Quantity Controls -->
-                        <div class="me-3">
-                            <div class="input-group input-group-sm" style="width: 110px;">
+                        <div class="me-2 flex-shrink-0">
+                            <div class="input-group input-group-sm cart-qty-group">
                                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="updateQty(<?php echo $item['product_id']; ?>, -1, <?php echo $maxStock; ?>)" id="btn-minus-<?php echo $item['product_id']; ?>">
                                     <i class="fas fa-minus"></i>
                                 </button>
-                                <input type="text" class="form-control text-center" id="qty-<?php echo $item['product_id']; ?>" value="<?php echo $item['quantity']; ?>" readonly style="font-size: 0.9rem;">
+                                <input type="text" class="form-control text-center" id="qty-<?php echo $item['product_id']; ?>" value="<?php echo $item['quantity']; ?>" readonly>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="updateQty(<?php echo $item['product_id']; ?>, 1, <?php echo $maxStock; ?>)" id="btn-plus-<?php echo $item['product_id']; ?>" <?php echo ($item['quantity'] >= $maxStock) ? 'disabled' : ''; ?>>
                                     <i class="fas fa-plus"></i>
                                 </button>
@@ -282,7 +282,7 @@ $selectedOriginalTotal = $selectedTotal + $selectedDiscount;
                         </div>
                         
                         <!-- Remove Button -->
-                        <div>
+                        <div class="flex-shrink-0">
                             <form method="POST">
                                 <input type="hidden" name="action" value="remove">
                                 <input type="hidden" name="product_id" value="<?php echo $item['product_id']; ?>">

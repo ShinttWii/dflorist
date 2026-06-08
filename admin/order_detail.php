@@ -27,7 +27,6 @@ if (!$order) {
 
 // Ambil outlet aktif untuk pickup
 $activeOutlet = $pdo->query("SELECT * FROM outlets WHERE is_active = 1 ORDER BY id ASC LIMIT 1")->fetch();
-}
 
 // Get order items
 $stmt = $pdo->prepare("SELECT * FROM order_items WHERE order_id = ?");
